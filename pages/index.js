@@ -18,7 +18,7 @@ export default function Home() {
         "font-size: 20px;"
       );
       console.log(
-        "%c网站开源地址：https://github.com/brucexu-eth/gclx-official",
+        "%c网站开源地址：https://github.com/knwins/knwin-official",
         "font-size: 20px;"
       );
     }
