@@ -40,7 +40,6 @@ const StyledMintButton = styled.div`
 
 function MintButton(props) {
   const [minting, setMinting] = useState(false);
-
   return (
     <StyledMintButton
       disabled={!!props.disabled}
@@ -53,9 +52,8 @@ function MintButton(props) {
         try {
           const { signer, contract } = await connectWallet();
           const contractWithSigner = contract.connect(signer);
-          const value = ethers.utils.parseEther(
-            props.mintAmount === 1 ? "0.01" : "0.02"
-          );
+          const value = ethers.utils.parseEther(props.mintAmount === 1 ? "0.004" : "0.008");
+          alert(value);
           const tx = await contractWithSigner.mint(props.mintAmount, {
             value,
           });
@@ -65,22 +63,7 @@ function MintButton(props) {
             title: "铸造成功",
             body: (
               <div>
-                <a
-                  href={`https://${ETHERSCAN_DOMAIN}/tx/${response.transactionHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  点击查看交易详情
-                </a>{" "}
-                或者到{" "}
-                <a
-                  href="https://opensea.io/account"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  OpenSea 查看
-                </a>
-                。
+                <a href={`https://${ETHERSCAN_DOMAIN}/tx/${response.transactionHash}`} target="_blank" rel="noreferrer">点击查看交易详情</a>{" "}或者到{" "}<a href="https://opensea.io/account" target="_blank" rel="noreferrer"> OpenSea 查看</a>。
               </div>
             ),
           });
@@ -104,18 +87,38 @@ function MintButton(props) {
   );
 }
 
+
+
 function MintSection() {
+   // 初始设置
   const [status, setStatus] = useState("0");
   const [progress, setProgress] = useState(null);
   const [fullAddress, setFullAddress] = useState(null);
   const [numberMinted, setNumberMinted] = useState(0);
+  const [maxPurchasePS, setMaxPurchasePS] = useState(0);
+  const [maxSupply, setMaxSupply] = useState(0);
+  const [mintPrice, setMintPrice] = useState(0);
+ 
 
   async function updateStatus() {
     const { contract } = await connectWallet();
     const status = await contract.status();
     const progress = parseInt(await contract.totalSupply());
+    const maxSupply = parseInt(await contract.MAX_SUPPLY());
+    const maxPurchasePS=parseInt(await contract.maxPurchasePS());
+    if (status==1) {
+       const mintPric=parseInt(await contract.mintPriceWL());
+       setMintPrice(mintPric/(10**18));
+    }else if (status==2) {
+       const mintPric=parseInt(await contract.mintPricePS());
+       setMintPrice(mintPric/(10**18));
+    }
+    
+    setMaxPurchasePS(maxPurchasePS);
+    setMaxSupply(maxSupply);
     setStatus(status.toString());
     setProgress(progress);
+
     // 在 mint 事件的时候更新数据
     contract.on("Minted", async (event) => {
       const status = await contract.status();
@@ -125,12 +128,13 @@ function MintSection() {
     });
   }
 
+  //初始化数据
   useEffect(() => {
     (async () => {
       const fullAddressInStore = get("fullAddress") || null;
       if (fullAddressInStore) {
-        const { contract } = await connectWallet();
-        const numberMinted = await contract.numberMinted(fullAddressInStore);
+        const {contract} = await connectWallet();
+        const numberMinted = await contract.publicSaleMinteds(fullAddressInStore);
         setNumberMinted(parseInt(numberMinted));
         setFullAddress(fullAddressInStore);
       }
@@ -139,7 +143,7 @@ function MintSection() {
         setFullAddress(fullAddressInStore);
         if (fullAddressInStore) {
           const { contract } = await connectWallet();
-          const numberMinted = await contract.numberMinted(fullAddressInStore);
+          const numberMinted = await contract.publicSaleMinteds(fullAddressInStore);
           setNumberMinted(parseInt(numberMinted));
           updateStatus();
         }
@@ -164,7 +168,7 @@ function MintSection() {
 
   async function refreshStatus() {
     const { contract } = await connectWallet();
-    const numberMinted = await contract.numberMinted(fullAddress);
+    const numberMinted = await contract.publicSaleMinteds(fullAddress);
     setNumberMinted(parseInt(numberMinted));
   }
 
@@ -192,16 +196,30 @@ function MintSection() {
           mintAmount={1}
           style={{ marginRight: "20px" }}
         />
-        <MintButton
-          onMinted={refreshStatus}
-          mintAmount={2}
-          disabled={numberMinted === 1}
-        />
+         
       </div>
     );
   }
 
-  if (progress >= 1000 || status === "2") {
+
+  if (status === "2") {
+    mintButton = (
+      <div
+        style={{
+          display: "flex",
+        }}
+      >
+        <MintButton
+          onMinted={refreshStatus}
+          mintAmount={1}
+          style={{ marginRight: "20px" }}
+        />
+        
+      </div>
+    );
+  }
+
+  if (status === "3") {
     mintButton = (
       <StyledMintButton
         style={{
@@ -243,17 +261,6 @@ function MintSection() {
     );
   }
 
-  mintButton = (
-    <StyledMintButton
-      style={{
-        background: "#eee",
-        color: "#999",
-        cursor: "not-allowed",
-      }}
-    >
-      全部卖完了
-    </StyledMintButton>
-  );
 
   return (
     <div
@@ -265,9 +272,10 @@ function MintSection() {
     >
       <div style={{ marginBottom: 20, display: "flex", alignItems: "center" }}>
         您的钱包： <ConnectWallet />{" "}
+        
         {fullAddress && (
           <span style={{ marginLeft: 10 }}>
-            可以铸造 {2 - numberMinted} 个。
+            可以铸造 {maxPurchasePS - numberMinted} 个。
           </span>
         )}
       </div>
@@ -284,10 +292,8 @@ function MintSection() {
         上查看。
       </div>
       <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
-        铸造进度：{progress === null ? "请先连接钱包" : progress} / 1000，价格
-        0.01 ETH 一个，每个钱包最多 2 个，每人每天 2 个钱包。
-        <br />
-        今天，我们都是良心铸造人！
+        铸造进度：{progress === null ? "请先连接钱包" : progress} / {maxSupply === null ? 0 : maxSupply}，公售价格
+        {mintPrice} ETH 一个，每个钱包最多 {maxPurchasePS}个。当前状态{status}。
       </div>
     </div>
   );
@@ -320,32 +326,10 @@ function Mint() {
           variant="body1"
           gutterBottom
         >
-          您好我的朋友，有没有觉得这个国产良心 NFT
-          项目网站跟别的项目不太一样？上面废话特别多，Mint
-          的按钮和方法一直找不到？
+          您好我的朋友，Minting........
         </Typography>
-        <Typography
-          style={{
-            marginTop: 30,
-            textAlign: "center",
-          }}
-          variant="body1"
-          gutterBottom
-        >
-          这并非因为我们不懂用户体验，相反，我们希望您在参与任何一个项目的时候，都能认真研究项目背后的团队、理念、发展路线和风险。不要
-          FOMO 也不要 FUD，要理性的决定自己是否要参与这个项目！
-        </Typography>
-        <Typography
-          style={{
-            marginTop: 30,
-            textAlign: "center",
-          }}
-          variant="body1"
-          gutterBottom
-        >
-          相信通过上面的资料，相信您已经充分了解了我们国产良心 NFT
-          项目。在您做好充分的思想准备之后，可以选择点击下面铸造（Mint）按钮进行铸造。
-        </Typography>
+        
+         
 
         <div
           style={{
@@ -357,39 +341,19 @@ function Mint() {
         >
           <MintSection />
         </div>
-        <Typography
-          style={{ textAlign: "center", marginTop: "8%" }}
-          variant="h5"
-          gutterBottom
-          component="div"
-        >
-          铸造之后
-        </Typography>
+
+
         <Typography
           style={{
-            marginTop: 30,
+            marginTop: "5%",
             textAlign: "center",
           }}
-          variant="body2"
+          variant="body1"
           gutterBottom
         >
-          铸造成功之后，您可以选择加入国产良心 NFT
-          会员频道，不过项目团队不会在里面做管理或者组织什么事情。
-          <br />
-          为了节约时间，经过和 NextDAO 的沟通，我们将会员频道设立在了 NextDAO 的
-          Discord 里面。
-          <br />
-          您可以加入 NextDAO 的 Discord （
-          <a
-            style={{ color: "#fff" }}
-            href="https://discord.gg/NextDAO"
-            target="_blank"
-            rel="noreferrer"
-          >
-            https://discord.gg/NextDAO
-          </a>
-          ） 并链接钱包验证身份，之后即可看到会员频道。
+          铸造之后 ........
         </Typography>
+         
       </Content>
     </Container>
   );

@@ -1,0 +1,289 @@
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import { ethers } from "ethers";
+import Typography from "@mui/material/Typography";
+
+import { get, subscribe } from "../store";
+import Container from "./Container";
+import ConnectWallet, { connectWallet } from "./ConnectWallet";
+import showMessage from "./showMessage";
+
+//merketree
+import merkletreejs from "../merkletree";
+import keccak256 from "@ethersproject/keccak256";
+
+//网络选择
+const ETHERSCAN_DOMAIN =
+  process.env.NEXT_PUBLIC_CHAIN_ID === "1"
+    ? "etherscan.io"
+    : "rinkeby.etherscan.io";
+
+//定义Content style
+const Content = styled.div`
+  max-width: 840px;
+  margin: 0 auto 5% auto;
+  strong {
+    color: red;
+  }
+`;
+
+
+//定义 MintButton Style
+const StyledMintButton = styled.div`
+  display: inline-block;
+  width: 140px;
+  text-align: center;
+  padding: 10px 10px;
+  border: 4px solid #000;
+  border-radius: 20px;
+  color: #000;
+  background: #dde4b6;
+  cursor: ${(props) => {
+    return props.minting || props.disabled ? "not-allowed" : "pointer";
+  }};
+
+  /*透明度*/
+  opacity: ${(props) => {
+    return props.minting || props.disabled ? 0.4 : 1;
+  }};
+`;
+
+
+function MintButton(props) {
+
+  const [minting, setMinting] = useState(false);
+
+  
+  return (
+    <StyledMintButton
+      disabled={!!props.disabled}
+      minting={minting}
+      onClick={async () => {
+        if (minting || props.disabled) {
+          return;
+        }
+        setMinting(true);
+        try {
+          const { signer, contract } = await connectWallet();
+          const contractWithSigner = contract.connect(signer);
+          const value = ethers.utils.parseEther(props.mintAmount === 1 ? mintPrice : mintPrice*props.mintAmount);
+          const leaf = keccak256({fullAddress});
+          const proof = tree.getHexProof(leaf);
+          const tx = await contractWithSigner.whitelistMint(props.mintAmount, {value,},proof);
+          const response = await tx.wait();
+          showMessage({
+            type: "success",
+            title: "铸造成功",
+            body: (
+              <div>
+                <a
+                  href={`https://${ETHERSCAN_DOMAIN}/tx/${response.transactionHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  点击查看交易详情
+                </a>
+              </div>
+            ),
+          });
+        } catch (err) {
+          showMessage({
+            type: "error",
+            title: "铸造失败",
+            body: err.message,
+          });
+        }
+        props.onMinted && props.onMinted();
+        setMinting(false);
+      }}
+      style={{
+        background: "#dde4b6",
+        ...props.style,
+      }}
+    >
+      铸造 {props.mintAmount} 个{minting ? "中..." : ""}
+    </StyledMintButton>
+  );
+}
+
+function WhiteMintSection() {
+
+  //初始化数据定义
+  const [status, setStatus] = useState("0");
+  const [progress, setProgress] = useState(null);//进度
+  const [fullAddress, setFullAddress] = useState(null);//完整地址
+  const [numberMinted, setNumberMinted] = useState(0);//已minted数量
+  const [maxSupplyWhitlist, setMaxSupplyWhitlist] = useState(0);//白名单总供应量
+  const [maxPurchaseWL, setMaxPurchaseWL] = useState(0);//白名单最大mint个数
+  const [mintPrice, setMintPrice] = useState(0);//白名单mint价格
+
+
+　//状态改变函数
+  async function updateStatus() {
+    const { contract } = await connectWallet();
+    const status = await contract.status();
+    const progress = parseInt(await contract.totalSupply());
+    setStatus(status.toString());
+    setProgress(progress);
+
+    // 在 mint 事件的时候更新数据
+    contract.on("Minted", async (event) => {
+      const status = await contract.status();
+      const progress = parseInt(await contract.totalSupply());
+      setStatus(status.toString());
+      setProgress(progress);
+    });
+  };
+
+  useEffect(() => {
+    (async () => {
+
+      //读取fullAddress地址
+      const fullAddressInStore = get("fullAddress") || null;
+
+      //如果地址存在，获取已mint的数量且保存地址
+      if (fullAddressInStore) {
+        const { contract } = await connectWallet();
+        const numberMinted = await contract.numberMinted(fullAddressInStore);
+        setNumberMinted(parseInt(numberMinted));
+
+        //获取白名单最大供应量
+        const maxSupplyWhitlist = await contract.maxSupplyWhitlist();
+        setMaxSupplyWhitlist(maxSupplyWhitlist);
+
+　　　　　//获取单个地址最在mint数量
+        const maxPurchaseWL =await contract.maxPurchaseWL();
+        setMaxPurchaseWL(maxPurchaseWL);
+
+        //获取白名单mint价格
+        const mintPric=parseInt(await contract.mintPriceWL());
+        setMintPrice(mintPric/(10**18));
+
+        setFullAddress(fullAddressInStore);
+        //updateStatus();
+      }
+
+
+      // subscribe("fullAddress", async () => {
+      //   const fullAddressInStore = get("fullAddress") || null;
+      //   setFullAddress(fullAddressInStore);
+      //   if (fullAddressInStore) {
+      //     const { contract } = await connectWallet();
+      //     const numberMinted = await contract.numberMinted(fullAddressInStore);
+      //     setNumberMinted(parseInt(numberMinted));
+      //     updateStatus();
+      //   }
+      // });
+
+    })();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const fullAddressInStore = get("fullAddress") || null;
+      if (fullAddressInStore) {
+        updateStatus();
+      }
+    } catch (err) {
+      showMessage({
+        type: "error",
+        title: "获取合约状态失败",
+        body: err.message,
+      });
+    }
+  }, []);
+
+  //异步刷新mint数量
+    async function refreshStatus() {
+      const { contract } = await connectWallet();
+      const numberMinted = await contract.numberMinted(fullAddress);
+      setNumberMinted(parseInt(numberMinted));
+    }
+
+  //默认状态
+  let mintButton = (<StyledMintButton　style={{background: "#eee",color: "#999",cursor: "not-allowed",}}>尚未开始</StyledMintButton>);
+  //开始白名单mint
+  if (status === "1") {
+    mintButton = (
+      <div style={{display: "flex",}} >
+        <MintButton
+          onMinted={refreshStatus}
+          mintAmount={1}
+          style={{ marginRight: "20px" }}
+        />
+      </div>
+    );
+  }
+  //已mint完
+  if (progress >= {maxSupply} || status === "2") {
+    mintButton = (<StyledMintButton　style={{background: "#eee",color: "#999",cursor: "not-allowed",}}>全部卖完了</StyledMintButton>);
+  }
+　
+  //达到min上限
+  if (numberMinted === 2) {mintButton = (<StyledMintButton　style={{background: "#eee",color: "#999",cursor: "not-allowed",}}>铸造已达上限</StyledMintButton>);}
+  //检查是否链接钱包
+  if (!fullAddress) {mintButton = (<StyledMintButton style={{background: "#eee",color: "#999",cursor: "not-allowed",}}> 先连接钱包</StyledMintButton>);}
+
+  return (<div tyle={{display: "flex", flexDirection: "column",alignItems: "center",}}>
+      <div style={{ marginBottom: 20, display: "flex", alignItems: "center" }}>
+        您的钱包： <ConnectWallet />{" "}
+        {fullAddress && (
+          <span style={{ marginLeft: 10 }}>
+            可以铸造 {maxPurchaseWL - numberMinted} 个。
+          </span>
+        )}
+      </div>
+      {mintButton}
+       
+      <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
+        铸造进度：{progress === null ? "请先连接钱包" : progress} / {maxSupplyWhitlist},价格{mintPric}ETH，每个钱包最多{maxPurchaseWL}个。
+      </div>
+    </div>
+  );
+}
+
+function WhitelistMint() {
+  return (
+    <Container
+      style={{
+        background: "#5383b2",
+        color: "#fff",
+      }}
+      id="whitelist-mint"
+    >
+      <Typography
+        style={{ textAlign: "center", marginTop: "5%" }}
+        variant="h3"
+        gutterBottom
+        component="div"
+      >
+        Ｗhite Minting
+      </Typography>
+
+      <Content>
+        <div
+          style={{
+            marginTop: 60,
+            border: "4px dashed #000",
+            padding: "40px",
+            borderRadius: 20,
+          }}
+        >
+          <WhiteMintSection />
+        </div>
+      </Content>
+
+      <Typography
+          style={{ textAlign: "center", marginTop: "8%" }}
+          variant="h5"
+          gutterBottom
+          component="div"
+        >
+          铸造之后
+        </Typography>
+
+    </Container>
+  );
+}
+
+export default WhitelistMint;
