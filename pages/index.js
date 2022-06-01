@@ -15,7 +15,7 @@ let whitelistAddresses = ['0x3be3f904996a79d8E8334B6DB7593108e06fA280',
 let leafNodes = whitelistAddresses.map(address => keccak256(address));
 //３.生成MerkleTree
 let tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
-
+console.log('Tree: ', tree.toString());
 //whitelist mint create proof
 //4.当前地址keccak256Hash
 let leaf = keccak256('0x8c5283176f4585D99A2967426e4ff3750110B5fA');
@@ -23,10 +23,10 @@ let leaf = keccak256('0x8c5283176f4585D99A2967426e4ff3750110B5fA');
 //5.MerkleTree中找查，如果数值大于0说明找到，否没有找到表示没有在白名单中
 let proof = tree.getHexProof(leaf);
 
-//Proof
-if (proof.length>0) {
-console.log('Proof of 0x8c5283176f4585D99A2967426e4ff3750110B5fA: ', proof[0]);
-}
+  //Proof
+    if (proof.length>0) {
+    console.log('Proof of 0x8c5283176f4585D99A2967426e4ff3750110B5fA: ', proof[0]);
+  }
 
 
 export default function Home() {
