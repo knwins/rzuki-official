@@ -11,7 +11,6 @@ import showMessage from "./showMessage";
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 
-
 //网络选择
 const ETHERSCAN_DOMAIN =
   process.env.NEXT_PUBLIC_CHAIN_ID === "1"
@@ -67,9 +66,34 @@ function MintButton(props) {
             const { signer, contract } = await connectWallet();
             const contractWithSigner = contract.connect(signer);
             const value = ethers.utils.parseEther(props.mintAmount === 1 ? "0.001" : "0.002");
-            let leaf = keccak256('0x3be3f904996a79d8E8334B6DB7593108e06fA280');
+
+            //create MerkleTree
+            //1.保留所有数据到一个数组中
+            let whitelistAddresses = ['0x3be3f904996a79d8E8334B6DB7593108e06fA280',
+            '0x5cC627205c184FF050A9B53bba3FcC179aF375eA'];
+
+            //2.进行keccak256Hash
+            let leafNodes = whitelistAddresses.map(address => keccak256(address));
+            //３.生成MerkleTree
+            let tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
+
+            //whitelist mint create proof
+            //4.当前地址keccak256Hash
+            let leaf = keccak256(fullAddressInStore);
+
+            //5.MerkleTree中找查，如果数值大于0说明找到，否没有找到表示没有在白名单中
             let proof = tree.getHexProof(leaf);
-            const tx = await contractWithSigner.whitelistMint(props.mintAmount, {value,},proof);
+
+            //Proof
+            if (proof.length==0) {
+              showMessage({
+                type: "success",
+                title: "提示",
+                body: "can't find you on the whitelist"
+              });
+            }
+
+            const tx = await contractWithSigner.whitelistMint(props.mintAmount, {value,},proof[0]);
             const response = await tx.wait();
             showMessage({
             type: "success",
@@ -77,6 +101,8 @@ function MintButton(props) {
             body: (<div> <a href={`https://${ETHERSCAN_DOMAIN}/tx/${response.transactionHash}`} target="_blank" rel="noreferrer">点击查看交易详情</a></div>),
           });
           }
+
+
         } catch (err) {
           showMessage({
             type: "error",
