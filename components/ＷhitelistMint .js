@@ -8,9 +8,10 @@ import Container from "./Container";
 import ConnectWallet, { connectWallet } from "./ConnectWallet";
 import showMessage from "./showMessage";
 
-//merketree
-import merkletreejs from "../merkletree";
-import keccak256 from "@ethersproject/keccak256";
+const { merkleTree } = require('merkletreejs')
+const { keccak256 } = ethers.utils
+
+
 
 //网络选择
 const ETHERSCAN_DOMAIN =
@@ -66,9 +67,11 @@ function MintButton(props) {
         try {
           const { signer, contract } = await connectWallet();
           const contractWithSigner = contract.connect(signer);
-          const value = ethers.utils.parseEther(props.mintAmount === 1 ? mintPrice : mintPrice*props.mintAmount);
+          const value = ethers.utils.parseEther(props.mintAmount === 1 ? "0.001" : "0.002");
+
+          
           const leaf = keccak256({fullAddress});
-          const proof = tree.getHexProof(leaf);
+          const proof = merkleTree.getHexProof(leaf);
           const tx = await contractWithSigner.whitelistMint(props.mintAmount, {value,},proof);
           const response = await tx.wait();
           showMessage({
@@ -126,6 +129,19 @@ function WhiteMintSection() {
     setStatus(status.toString());
     setProgress(progress);
 
+       //获取白名单最大供应量
+       const maxSupplyWhitlist = await contract.maxSupplyWhitlist();
+       setMaxSupplyWhitlist(maxSupplyWhitlist);
+
+//     //获取单个地址最在mint数量
+//     const maxPurchaseWL =await contract.maxPurchaseWL();
+//     setMaxPurchaseWL(maxPurchaseWL);
+
+//     //获取白名单mint价格
+//     const mintPrice=parseInt(await contract.mintPriceWL());
+//     setMintPrice(mintPrice/(10**18));
+
+
     // 在 mint 事件的时候更新数据
     contract.on("Minted", async (event) => {
       const status = await contract.status();
@@ -137,43 +153,27 @@ function WhiteMintSection() {
 
   useEffect(() => {
     (async () => {
-
       //读取fullAddress地址
       const fullAddressInStore = get("fullAddress") || null;
-
       //如果地址存在，获取已mint的数量且保存地址
       if (fullAddressInStore) {
         const { contract } = await connectWallet();
-        const numberMinted = await contract.numberMinted(fullAddressInStore);
+        const numberMinted = await contract.whitelistMinteds(fullAddressInStore);
         setNumberMinted(parseInt(numberMinted));
-
-        //获取白名单最大供应量
-        const maxSupplyWhitlist = await contract.maxSupplyWhitlist();
-        setMaxSupplyWhitlist(maxSupplyWhitlist);
-
-　　　　　//获取单个地址最在mint数量
-        const maxPurchaseWL =await contract.maxPurchaseWL();
-        setMaxPurchaseWL(maxPurchaseWL);
-
-        //获取白名单mint价格
-        const mintPric=parseInt(await contract.mintPriceWL());
-        setMintPrice(mintPric/(10**18));
-
         setFullAddress(fullAddressInStore);
-        //updateStatus();
+        updateStatus();
       }
 
-
-      // subscribe("fullAddress", async () => {
-      //   const fullAddressInStore = get("fullAddress") || null;
-      //   setFullAddress(fullAddressInStore);
-      //   if (fullAddressInStore) {
-      //     const { contract } = await connectWallet();
-      //     const numberMinted = await contract.numberMinted(fullAddressInStore);
-      //     setNumberMinted(parseInt(numberMinted));
-      //     updateStatus();
-      //   }
-      // });
+       subscribe("fullAddress", async () => {
+         const fullAddressInStore = get("fullAddress") || null;
+         setFullAddress(fullAddressInStore);
+         if (fullAddressInStore) {
+           const { contract } = await connectWallet();
+           const numberMinted = await contract.whitelistMinteds(fullAddressInStore);
+           setNumberMinted(parseInt(numberMinted));
+           updateStatus();
+         }
+       });
 
     })();
   }, []);
@@ -196,7 +196,7 @@ function WhiteMintSection() {
   //异步刷新mint数量
     async function refreshStatus() {
       const { contract } = await connectWallet();
-      const numberMinted = await contract.numberMinted(fullAddress);
+      const numberMinted = await contract.whitelistMinteds(fullAddress);
       setNumberMinted(parseInt(numberMinted));
     }
 
@@ -215,7 +215,7 @@ function WhiteMintSection() {
     );
   }
   //已mint完
-  if (progress >= {maxSupply} || status === "2") {
+  if (progress >= {maxSupplyWhitlist} || status === "2") {
     mintButton = (<StyledMintButton　style={{background: "#eee",color: "#999",cursor: "not-allowed",}}>全部卖完了</StyledMintButton>);
   }
 　
@@ -223,7 +223,7 @@ function WhiteMintSection() {
   if (numberMinted === 2) {mintButton = (<StyledMintButton　style={{background: "#eee",color: "#999",cursor: "not-allowed",}}>铸造已达上限</StyledMintButton>);}
   //检查是否链接钱包
   if (!fullAddress) {mintButton = (<StyledMintButton style={{background: "#eee",color: "#999",cursor: "not-allowed",}}> 先连接钱包</StyledMintButton>);}
-
+  
   return (<div tyle={{display: "flex", flexDirection: "column",alignItems: "center",}}>
       <div style={{ marginBottom: 20, display: "flex", alignItems: "center" }}>
         您的钱包： <ConnectWallet />{" "}
@@ -234,9 +234,8 @@ function WhiteMintSection() {
         )}
       </div>
       {mintButton}
-       
       <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
-        铸造进度：{progress === null ? "请先连接钱包" : progress} / {maxSupplyWhitlist},价格{mintPric}ETH，每个钱包最多{maxPurchaseWL}个。
+        铸造进度：{progress === null ? "请先连接钱包" : progress} / {maxSupplyWhitlist},价格{mintPrice}ETH，每个钱包最多{maxPurchaseWL}个。
       </div>
     </div>
   );

@@ -15,7 +15,6 @@ export default function Home() {
       <Head>
         <title>标准白名单Mint实例</title>
         <meta name="description" content="标准白名单Mint实例" />
-        <link rel="icon" href="/favicon.png" />
       </Head>
       <WhitelistMint />
     </div>
