@@ -62,14 +62,13 @@ function MintButton(props) {
         }
         setMinting(true);
         try {
-          
           const fullAddressInStore = get("fullAddress") || null;
           if (fullAddressInStore) {
             const { signer, contract } = await connectWallet();
             const contractWithSigner = contract.connect(signer);
             const value = ethers.utils.parseEther(props.mintAmount === 1 ? "0.001" : "0.002");
-            const leaf = keccak256('0x3be3f904996a79d8E8334B6DB7593108e06fA280');
-            const proof = tree.getHexProof(leaf);
+            let leaf = keccak256('0x3be3f904996a79d8E8334B6DB7593108e06fA280');
+            let proof = tree.getHexProof(leaf);
             const tx = await contractWithSigner.whitelistMint(props.mintAmount, {value,},proof);
             const response = await tx.wait();
             showMessage({
@@ -118,11 +117,13 @@ function WhiteMintSection() {
     const maxSupplyWhitlist = parseInt(await contract.maxSupplyWhitlist()); //获取白名单最大供应量
     const maxPurchaseWL = parseInt(await contract.maxPurchaseWL());//获取单个地址最在mint数量
     const mintPrice=parseInt(await contract.mintPriceWL());//获取白名单mint价格
+
     setStatus(status.toString());
     setProgress(progress);
     setMaxSupplyWhitlist(maxSupplyWhitlist);
     setMaxPurchaseWL(maxPurchaseWL);
     setMintPrice(mintPrice/(10**18));
+
     // 在 mint 事件的时候更新数据
     contract.on("Minted", async (event) => {
       const status = await contract.status();
@@ -138,7 +139,7 @@ function WhiteMintSection() {
       const fullAddressInStore = get("fullAddress") || null;
       //如果地址存在，获取已mint的数量且保存地址
       if (fullAddressInStore) {
-        
+
         const { contract } = await connectWallet();
         const numberMinted = await contract.whitelistMinteds(fullAddressInStore);
         setNumberMinted(parseInt(numberMinted));
