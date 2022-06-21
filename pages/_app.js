@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import '../styles/main.css';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import { padWidth } from '../utils';
 

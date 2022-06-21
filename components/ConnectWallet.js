@@ -111,7 +111,7 @@ function ConnectWallet(props) {
     <div style={{ position: "relative" }}>
       <Chip
         style={{ fontSize: 16 }}
-        label={loading ? "连接中..." : "连接钱包"}
+        label={loading ? "Connect..." : "Connect wallet"}
         color="primary"
         onClick={async () => {
           setLoading(true);
@@ -143,7 +143,7 @@ function ConnectWallet(props) {
             setAddress(null);
             showMessage({
               type: "error",
-              title: "链接钱包失败，请重试",
+              title: "Connect wallet fail,please reconnect",
               body: err.message,
             });
           }
