@@ -7,6 +7,7 @@ export default function Home(props) {
     <div>
       <Head>
         <title>Mint实例</title>
+        <link rel="icon" href="/favicon.ico" />
         <meta name="description" content="Mint实例" />
       </Head>
       <Mint />
