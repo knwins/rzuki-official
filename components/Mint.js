@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import Link from 'next/link'
 import React,{useState, useEffect} from "react";
 import styled from "styled-components";
 import { ethers } from "ethers";
@@ -7,6 +9,7 @@ import { get, subscribe } from "../store";
 import Container from "./Container";
 import ConnectWallet, { connectWallet } from "./ConnectWallet";
 import showMessage from "./showMessage";
+import Logo from "./Logo";
 
 const ETHERSCAN_DOMAIN =
   process.env.NEXT_PUBLIC_CHAIN_ID === "1"
@@ -21,118 +24,39 @@ const Content = styled.div`
   }
 `;
 
+
+const myLoader = ({src,width,quality}) => {
+  return `${src}?w=${width}&q=${quality || 75}`
+}
+
 const StyledMintButton = styled.div`
   display: inline-block;
   width: 140px;
   text-align: center;
   padding: 10px 10px;
-  border: 1px solid #000;
   border-radius: 10px;
   color: #000;
-  background: #dde4b6;
+  background: "rgba(192,53,64,1)",
   cursor: ${(props) => {
     return props.minting || props.disabled ? "not-allowed" : "pointer";
   }};
   opacity: ${(props) => {
-    return props.minting || props.disabled ? 0.001 : 1;
+    return props.minting || props.disabled ? 0.5 : 1;
   }};
 `;
 
-
-class MintHome extends React.Component{
-    constructor() {
-        super(); 
-
-        var collectsArry=new Array();
-       for (var i = 0; i <= 10; i++) {
-            var object=new Object();
-            object.text="#"+i;
-            object.imageUrl="https://ikzttp.mypinata.cloud/ipfs/QmYDvPAXtiJg7s8JdRBSLWdgSphQdac8j1YuQNNxcGE1hg/"+i+".png";
-            collectsArry.push(object);
-            }
-
-            this.collects=collectsArry;
-
-    }
-    render() {
-    return (
-    <Container
-      style={{
-        background: "#fff",
-        color: "#000",
-      }}
-      id="mint"
-    >
-      <Typography
-        style={{ textAlign: "center", marginTop: "5%" }}
-        variant="h3"
-        gutterBottom
-        component="div"
-      >
-        Uzuki
-      </Typography>
-
-      <Content>
-        <Typography
-          style={{
-            marginTop: "5%",
-            textAlign: "center",
-          }}
-          variant="body1"
-          gutterBottom
-        >
-          minting
-        </Typography>
-        
-        <div
-          style={{
-            marginTop: 60,
-            border: "1px dashed #000",
-            padding: "40px",
-            borderRadius: 10,
-          }}
-        >
-          <MintSection />
-        </div>
-
-
-        <Typography
-          style={{
-            marginTop: "5%",
-            textAlign: "center",
-          }}
-          variant="body1"
-          gutterBottom
-        >
-          show tokenIDs
-          <div class="collectList">
-          <ul>  
-           {  this.collects.map(function (value, key) {
-              return (<li><img src={value.imageUrl} /><div class="text">{value.text}</div></li>);
-            })
-           }
-          </ul>
-         </div>
-        </Typography>
-         
-      </Content>
-    </Container>
-  );
-    }
-}
-export default MintHome;
-
-
  
-
+ 
 function MintButton(props) {
 
   const [minting, setMinting] = useState(false); 
-  
+
   return (
     <StyledMintButton
       disabled={!!props.disabled}
+
       minting={minting}
+
       onClick={async () => {
         if (minting || props.disabled) {
           return;
@@ -147,7 +71,6 @@ function MintButton(props) {
           showMessage({
             type: "success",
             title: "Mint success",
-            body: (<div>Mint success</div>),
           });
         } catch (err) {
           showMessage({
@@ -160,65 +83,96 @@ function MintButton(props) {
         setMinting(false);
       }}
       style={{
-        background: "#dde4b6",
-        ...props.style,
+         background: "rgba(192,53,64,1)",
+        color: "#fff",
+        cursor:"pointer",
+       // ...props.style,
       }}
     >
-      MINT
+    {minting ? "Minting..." : "MINT"}
     </StyledMintButton>
   );
 }
 
- 
-
 
 function MintSection() {
-  // 初始设置
-  const [status, setStatus] = useState("0");
 
   //已经mint的数量
+  const [status, setStatus] = useState(null);
   const [progress, setProgress] = useState(null);
   const [fullAddress, setFullAddress] = useState(null);
-  const [thisBaseURI,setThisBaseURI]= useState("");
   const [mintPrice,setMintPrice]= useState(null);
-  const [tokenIdPrice,setTokenIdPrice]=useState(null);
   const [supply,setSupply]=useState(null);
-  
-　
+  const [collects,setCollects]=useState(null);
+  const [minted,setMinted]=useState(false);
+
+
   async function getContractData() {
+
+
     const { contract } = await connectWallet();
     const status = await contract.status();
     const progress = parseInt(await contract.totalSupply());
-
-    //获取指定tokenID的URI
-    const thisBaseURI = await contract.tokenURI(0);
-
     //获取mint价格
     const mintPrice = parseInt(await contract.mintPrice())/10**18;
-
-    //获取指定tokenID价格
-    const tokenIdPrice = parseInt(await contract.getTokenPrice(0))/10**18;
-
     //发行总量
-     const supply = parseInt(await contract.supply());
- 
-    setStatus(status.toString());
+    const supply = parseInt(await contract.supply());
+
+    //检查是否minted 
+    const fullAddress = get("fullAddress");
+    if (fullAddress) {
+    const minted=await contract.getMinted(fullAddress);
+    setMinted(minted);
+    }
+    setStatus(status);
     setProgress(progress);
-    setThisBaseURI(thisBaseURI);
     setMintPrice(mintPrice);
-    setTokenIdPrice(tokenIdPrice);
-    setSupply(supply)
-
-
+    setSupply(supply);
     
+
+　　//设置只显示100条数据
+    if (progress>=100){progress=100;}
+
+    if(progress>0){
+      var collectsArry=new Array();
+
+      //获取指定tokenID的URI
+      const thisBaseURI = await contract.baseURI();
+      for (var i = 1; i <= progress; i++) {
+        var object=new Object();
+
+        //获取元数据
+        const res = await fetch(thisBaseURI+i);
+        const json = await res.json();
+
+        //读取合约价格
+        const tokenIdPrice = parseInt(await contract.getTokenPrice(i))/10**18;
+        object.id=i;
+        object.name=json.name;
+       // object.imageUrl="https://ikzttp.mypinata.cloud/ipfs/QmYDvPAXtiJg7s8JdRBSLWdgSphQdac8j1YuQNNxcGE1hg/"+i+".png";
+        object.imageUrl=json.image;
+        object.price=tokenIdPrice;
+        collectsArry.push(object);
+      }
+      setCollects(collectsArry);
+    }
 
     // 在 mint 事件的时候更新数据
     contract.on("Minted", async (event) => {
-      const status = await contract.status();
+    const status = await contract.status();
      const progress = parseInt(await contract.totalSupply());
       setStatus(status.toString());
       setProgress(progress);
     });
+  }
+
+
+ async function refreshStatus() {
+    const { contract } = await connectWallet();
+    //检查是否minted 
+    //const fullAddress = get("fullAddress");
+   // const minted=await contract.getMinted(fullAddress);
+    //setMinted(minted);
   }
 
 
@@ -259,8 +213,9 @@ function MintSection() {
   let mintButton = (
     <StyledMintButton
       style={{
-        background: "#eee",
-        color: "#999",
+        background: "rgba(174,174,174,1)",
+        color: "#fff",
+        border:"0",
         cursor: "not-allowed",
       }}
     >
@@ -268,31 +223,48 @@ function MintSection() {
     </StyledMintButton>
   );
 
-  if (status === "1") {
-    mintButton = (
-      <div
+
+
+  if (status === 0) {
+    
+      mintButton = (<StyledMintButton
         style={{
-          display: "flex",
+          background: "rgba(174,174,174,1)",
+          color: "#fff",
+          width:"180px",
+          cursor: "not-allowed",
         }}
-      >
-        <MintButton
-          mintAmount={1}
-          style={{ marginRight: "20px" }}
-        />    
-      </div>
-      
-    );
+      >Waiting mint</StyledMintButton>);
+    
   }
 
 
-  if (status === "2") {
+
+  if (status === 1) {
+    if (minted) {
+      mintButton = (<StyledMintButton
+        style={{
+          background: "rgba(174,174,174,1)",
+          color: "#fff",
+          width:"180px",
+          cursor: "not-allowed",
+        }}
+      >Minted</StyledMintButton>);
+    }else{
+      mintButton = (<MintButton mintAmount={1}  onMinted={refreshStatus}/>);
+    }
+  }
+
+
+  if (status === 2) {
     mintButton = (
       <div
         style={{
+
           display: "flex",
         }}
       >
-        Minted
+        Buy On OpenSea
       </div>
     );
   }
@@ -301,8 +273,9 @@ function MintSection() {
     mintButton = (
       <StyledMintButton
         style={{
-          background: "#eee",
-          color: "#999",
+          background: "rgba(174,174,174,1)",
+          color: "#fff",
+          width:"180px",
           cursor: "not-allowed",
         }}
       >
@@ -313,28 +286,108 @@ function MintSection() {
 
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
+    <div>
+    <div style={{
+        width: "100%",
         alignItems: "center",
-      }}
-    >
-      <div style={{ marginBottom: 20, display: "flex", alignItems: "center" }}>
-       <ConnectWallet />
-      </div>
-      {mintButton}
-      <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
-        Progress:{progress === null ? "please connect wallet" : progress} / {supply}
-      </div>
-      <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
-        Mint price：{mintPrice} 
+        padding:"40px",
+        border:"1px dashed #000",
+        borderRadius:"10px",
+      }}>
+
+        <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }} >
+
+          <div style={{ marginBottom: 20, display: "flex", alignItems: "center" }}>
+           <ConnectWallet />
+          </div>
+          <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
+          {mintButton}
+          </div>
+          <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
+            Progress:{progress === null ? "please connect wallet" : progress} / {supply}
+          </div>
+          <div style={{ marginTop: 20, fontSize: 20, textAlign: "center" }}>
+            Mint price：{mintPrice} ETH {minted ? "true" : "false"}
+          </div>
+        </div>
+     </div>
+
+
+      <div className="collectList">
+      <div style={{
+                alignItems: "center",
+                fontSize:"1.25rem",
+                textAlign:"center",
+                padding:"20px 0",
+              }}>Show Collections</div>
+      <ul>
+      {collects ===null ? "please wait..." : collects.map((collect) => (
+                      <li key={collect.id}> <a target="_blank" href={"https://testnets.opensea.io/assets/rinkeby/0x61752d7b43b7c0fe8b6aa37020effcc0ce55f80a/"+collect.id}><Image
+                    loader={myLoader}
+                    src={collect.imageUrl}
+                    alt={collect.text}
+                    width={200}
+                    height={200}
+                    /></a><div className="text">{collect.name}</div> <div style={{
+                alignItems: "center",
+                fontSize:"0.75rem",
+                textAlign:"center",
+                padding:"20px 0",
+              }}>{collect.price>0 ? collect.price+"ETH" : "In collection"}</div>
+              </li>))}
+      </ul>
       </div>
     </div>
-  );
+
+
+    );
 }
 
- 
 
+function Mint(){
+    return (
+    <Container
+      style={{
+        background: "#fff",
+        color: "#000",
+      }}
+      id="mint"
+    >
+      <Typography
+        style={{ textAlign: "center", marginTop: "5%" }}
+        variant="h3"
+        gutterBottom
+        component="div"
+      >
+        <Logo />
 
+      </Typography>
+
+      <Content>
+        <Typography
+          style={{
+            marginTop: "5%",
+            textAlign: "center",
+          }}
+          variant="body1"
+          gutterBottom
+        >
+          Minting
+        </Typography>
+
+        <div>
+          <MintSection />
+        </div>
+
+      </Content>
+    </Container>
+  );
+  
+}
+
+export default Mint;
 
