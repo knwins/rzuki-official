@@ -143,6 +143,8 @@ function Admin(){
  
   async function getContractData(fullAddress) {
 
+    try{
+
     const { contract } = await connectWallet();
     const name=await contract.name();
     const symbol=await contract.symbol();
@@ -170,6 +172,13 @@ function Admin(){
     setPublicSalePerMint(publicSalePerMint);
     setAllowListStatus(allowListStatus);
     setPublicSaleStatus(publicSaleStatus);
+
+    } catch (err) {
+        showMessage({
+          type: "error",
+          title: "connect contract error"
+        });
+      }
 
   }
 

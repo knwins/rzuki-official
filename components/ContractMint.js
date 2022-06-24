@@ -80,10 +80,10 @@ style={{"background":"url(/girl_bg.png) no-repeat right bottom","backgroundPosit
 
 
 
-function AllowListMint(){
+function AllowListMintFun(){
 
     const [fullAddress,setFullAddress]=useState(null);
-    const [allowListMintAmount,setAllowListMintAmount]= useState(null);
+    const [allowListMintAmount,setAllowListMintAmount]= useState(0);
     const [allowListMintPrice,setAllowListMintPrice]= useState(null);
     const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
     const [allowListStatus,setAllowListStatus]= useState(null);
@@ -93,17 +93,21 @@ function AllowListMint(){
  
  　//读取合约数据
     async function getContractData(fullAddress) {
+
+
+        try {
+
     const { contract } = await connectWallet();
     const allowListMintAmount = parseInt(await contract.allowListMintAmount());
     const allowListMintPrice = parseInt(await contract.allowListMintPrice());
     const maxPerAddressDuringMint = parseInt(await contract.maxPerAddressDuringMint());
     const allowListStatus=await contract.allowListStatus();
 
-
     setAllowListMintAmount(allowListMintAmount);
     setAllowListMintPrice(allowListMintPrice/10**18);
     setMaxPerAddressDuringMint(maxPerAddressDuringMint);
     setAllowListStatus(allowListStatus);
+    setMintQuantity(1);
 
      if (fullAddress) {
     const  allowListAppeared=await contract.allowListAppeared(fullAddress)
@@ -114,6 +118,13 @@ function AllowListMint(){
         setAllowListStock(maxPerAddressDuringMint);
      }
     }
+
+    } catch (err) {
+        showMessage({
+          type: "error",
+          title: "connect contract error"
+        });
+      }
    }
 
     
@@ -200,6 +211,17 @@ function AllowListMint(){
   const handleAllowlistMint= async (e) => {
       try {
          e.preventDefault()
+
+
+
+         if (!allowListStatus) {
+            showMessage({
+                type: "informtion",
+                title: "wait allow list mint",
+            });
+            return;
+         }
+
          if ((maxPerAddressDuringMint- allowListStock)>=maxPerAddressDuringMint) {
             showMessage({
                 type: "informtion",
@@ -282,8 +304,8 @@ function AllowListMint(){
         <span className="px-4">Collection Size:{COLLECTION_SIZE}</span> <span className="px-4">Allowlist Price:{allowListMintPrice}ETH</span>
     </p>
 
-    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1.5rem"}}>
-        {ALLOWLIST_AMOUNT-allowListMintAmount}/ {ALLOWLIST_AMOUNT}
+    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1rem"}}>
+        {ALLOWLIST_AMOUNT-allowListMintAmount} / {ALLOWLIST_AMOUNT}
     </div>
 
     <div className="text-lg" style={{"color":"#000"}}>
@@ -299,7 +321,8 @@ function AllowListMint(){
                 </span>
             </button>
             <div className="ml-4 mr-4" style={{"color":"#000","fontSize":"1.5rem"}}>
-                <input type="text" style={{"width":"120px"}} value={mintQuantity} className="ant-input text-center"/>
+                <input type="text" style={{"width":"120px"}} value={mintQuantity} 
+                className="ant-input text-center" onChange={(e) => setMintQuantity(1)} />
             </div>
 
             <button type="button" onClick={handRightClick} className="ant-btn ant-btn-default ant-btn-icon-only ant-btn-background-ghost"
@@ -334,7 +357,7 @@ function AllowListMint(){
  
 
 
-function PublicMint(){
+function PublicSaleFun(){
 
     const [fullAddress,setFullAddress]=useState(null);
     const [amountForPublicSale,setAmountForPublicSale]= useState(null);
@@ -343,13 +366,12 @@ function PublicMint(){
     const [publicSaleStatus,setPublicSaleStatus]= useState(null);
     const [publicSaleQuantity,setPublicSaleQuantity]= useState(1);
     const [allowListStock,setAllowListStock]=useState(0);
-    const [publicSalePerMint,setPublicSalePerMint]=useState(0);
     const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
     
     //已买的数量
-    const [publicSaleBuyed,setPublicSaleBuyed]= useState(null);
+    const [publicSaleBuyed,setPublicSaleBuyed]= useState(0);
     //已minit数量
-    const [allowListMinted,setAllowListMinted]= useState(null);
+    const [allowListMinted,setAllowListMinted]= useState(0);
     
 
     //mint总数
@@ -358,18 +380,20 @@ function PublicMint(){
  　//读取合约数据
     async function getContractData(fullAddress) {
 
+        try{
+
     const { contract } = await connectWallet();
     const amountForPublicSale = parseInt(await contract.amountForPublicSale());
     const publicPrice = parseInt(await contract.publicPrice());
     const publicSalePerMint = parseInt(await contract.publicSalePerMint());
     const publicSaleStatus=await contract.publicSaleStatus();
+    const maxPerAddressDuringMint=await contract.maxPerAddressDuringMint();
 
     setAmountForPublicSale(amountForPublicSale);
     setPublicPrice(publicPrice/10**18);
     setPublicSalePerMint(publicSalePerMint);
     setPublicSaleStatus(publicSaleStatus);
     setMaxPerAddressDuringMint(maxPerAddressDuringMint);
-    setPublicSalePerMint(publicSalePerMint);
     
     if (fullAddress) {
     const numberMinted= parseInt(await contract.numberMinted(fullAddress));
@@ -379,9 +403,10 @@ function PublicMint(){
     if (allowListAppeared) {
         const allowListStock= parseInt(await contract.allowListStock(fullAddress));
         setAllowListStock(allowListStock);
-        allowListMinted(maxPerAddressDuringMint-allowListStock);
+        setAllowListMinted(maxPerAddressDuringMint-allowListStock);
      }else{
         setAllowListStock(maxPerAddressDuringMint);
+        setAllowListMinted(0);
      }
      //处理公售
      
@@ -392,6 +417,14 @@ function PublicMint(){
      }
         
     }
+
+    } catch (err) {
+        showMessage({
+          type: "error",
+          title: "connect wallet fail"
+        });
+      }
+
    }
 
     
@@ -480,7 +513,16 @@ function PublicMint(){
          e.preventDefault()
 
 
-         if (numberMinted>=publicSalePerMint) {
+
+      if (!publicSaleStatus) {
+            showMessage({
+                type: "informtion",
+                title: "wait public sale",
+            });
+            return;
+         }
+
+         if (publicSaleBuyed>=publicSalePerMint) {
             showMessage({
                 type: "informtion",
                 title: "you buy max limit",
@@ -493,7 +535,7 @@ function PublicMint(){
             const { signer, contract } = await connectWallet();
             const contractWithSigner = contract.connect(signer);
             const value = ethers.utils.parseEther(paymentETH.toString());
-            const tx = await contractWithSigner.allowListMint(mintQuantity,proof,{value,});
+            const tx = await contractWithSigner.allowListMint(publicSaleQuantity,proof,{value,});
             const response = await tx.wait();
             showMessage({
                 type: "informtion",
@@ -520,8 +562,8 @@ function PublicMint(){
         <span className="px-4">Collection Size:{COLLECTION_SIZE}</span> <span className="px-4">Public Sale Price:{publicPrice}ETH</span>
     </p>
 
-    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1.5rem"}}>
-        {PUBLICSALE_AMOUNT-amountForPublicSale}/ {PUBLICSALE_AMOUNT}
+    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1rem"}}>
+        {PUBLICSALE_AMOUNT-amountForPublicSale} / {PUBLICSALE_AMOUNT}
     </div>
     <div className="text-lg" style={{"color":"#000"}}>
         <div className="flex items-center justify-center gap-x-2">
@@ -536,7 +578,8 @@ function PublicMint(){
                 </span>
             </button>
             <div className="ml-4 mr-4" style={{"color":"#000","fontSize":"1.5rem"}}>
-                <input type="text" style={{"width":"120px"}} value={publicSaleQuantity} className="ant-input text-center"/>
+                <input type="text" style={{"width":"120px"}} value={publicSaleQuantity} 
+                className="ant-input text-center" onChange={(e) => setPublicSaleQuantity(1)} />
             </div>
 
             <button type="button" onClick={handPublicSaleRightClick} className="ant-btn ant-btn-default ant-btn-icon-only ant-btn-background-ghost"
@@ -553,7 +596,7 @@ function PublicMint(){
     </div>
 
     <div className="mt-4 ml-4 mr-4" style={{"color":"#000","fontSize":"0.75rem"}}>
-             You Buy {numberMinted>0 ? (numberMinted- maxPerAddressDuringMint- allowListStock):"0"}
+             You Buy {publicSaleBuyed}
      </div>
     <div className="mt-4 flex justify-center" onClick={handlePublicSale}>
         <div className="inline-flex rounded-md shadow">
@@ -577,6 +620,8 @@ function CollectionList(){
 
     //读取合约数据
     async function getContractData(fullAddress) {
+
+        try{
         const { contract } = await connectWallet();
         const totalSupply = parseInt(await contract.totalSupply());
         setTotalSupply(totalSupply);
@@ -599,6 +644,14 @@ function CollectionList(){
             }
             setCollectionList(collectionArray);
         }
+
+
+        } catch (err) {
+        showMessage({
+          type: "error",
+          title: "connect contract error"
+        });
+      }
     }
 
  
@@ -680,8 +733,8 @@ function Home(){
   return (
    <>
   　<ContractShow />
-   <AllowListMint />
-   <PublicMint />
+   <AllowListMintFun />
+   <PublicSaleFun />
    <CollectionList />
   </>
   );
