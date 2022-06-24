@@ -63,7 +63,7 @@ style={{"background":"url(/girl_bg.png) no-repeat right bottom","backgroundPosit
         "lineHeight":"1.7rem",}}>
         A collection of 1,888 avatars that give you membership access to The Garden. 
         It starts with exclusive streetwear collabs, NFT drops, live events, and much more that will be revealed over time. 
-        Community ownership in Azuki allows for a new genre of media which the world has yet to explore. An Azuki is your identity in the metaverse — let&apos;s build together.
+        Community ownership in Rzuki allows for a new genre of media which the world has yet to explore. An Rzuki is your identity in the metaverse — let&apos;s build together.
         </p>
         
         <p className="mt-4 text-lg leading-6 text-indigo-200" 

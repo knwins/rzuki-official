@@ -6,9 +6,9 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Mint实例</title>
+        <title>Rzuki NFT</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta name="description" content="Mint实例" />
+        <meta name="description" content="Rzuki is a brand" />
       </Head>
       <Index />
     </div>
