@@ -125,12 +125,14 @@ function AllowListMint(){
             if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
                 setFullAddress(fullAddressInStore);
                 const { contract } = await connectWallet();
-            }else{
+            }
+            
+            /*else{
                 showMessage({
                     type: "error",
                     title: "请链接钱包",
                 });  
-            }
+            }*/
           subscribe("fullAddress", async () => {
             const fullAddressInStore = get("fullAddress") || null;
              if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
@@ -341,7 +343,13 @@ function PublicMint(){
     const [publicSaleStatus,setPublicSaleStatus]= useState(null);
     const [publicSaleQuantity,setPublicSaleQuantity]= useState(1);
     const [allowListStock,setAllowListStock]=useState(0);
+    const [publicSalePerMint,setPublicSalePerMint]=useState(0);
     const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
+    
+    //已买的数量
+    const [publicSaleBuyed,setPublicSaleBuyed]= useState(null);
+    //已minit数量
+    const [allowListMinted,setAllowListMinted]= useState(null);
     
 
     //mint总数
@@ -355,25 +363,34 @@ function PublicMint(){
     const publicPrice = parseInt(await contract.publicPrice());
     const publicSalePerMint = parseInt(await contract.publicSalePerMint());
     const publicSaleStatus=await contract.publicSaleStatus();
-    const maxPerAddressDuringMint = parseInt(await contract.maxPerAddressDuringMint());
 
     setAmountForPublicSale(amountForPublicSale);
     setPublicPrice(publicPrice/10**18);
     setPublicSalePerMint(publicSalePerMint);
     setPublicSaleStatus(publicSaleStatus);
     setMaxPerAddressDuringMint(maxPerAddressDuringMint);
-
-
+    setPublicSalePerMint(publicSalePerMint);
+    
     if (fullAddress) {
-     const numberMinted= parseInt(await contract.numberMinted(fullAddress));
-     setNumberMinted(numberMinted);
+    const numberMinted= parseInt(await contract.numberMinted(fullAddress));
+    setNumberMinted(numberMinted);
+    //处理白名单
     const  allowListAppeared=await contract.allowListAppeared(fullAddress)
     if (allowListAppeared) {
         const allowListStock= parseInt(await contract.allowListStock(fullAddress));
         setAllowListStock(allowListStock);
+        allowListMinted(maxPerAddressDuringMint-allowListStock);
      }else{
         setAllowListStock(maxPerAddressDuringMint);
      }
+     //处理公售
+     
+     if(numberMinted>0){
+       setPublicSaleBuyed(numberMinted-allowListMinted);
+     }else{
+      setPublicSaleBuyed(0);
+     }
+        
     }
    }
 
@@ -386,12 +403,14 @@ function PublicMint(){
             if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
                 setFullAddress(fullAddressInStore);
                 const { contract } = await connectWallet();
-            }else{
+            }
+            
+            /*else{
                 showMessage({
                     type: "error",
                     title: "请链接钱包",
                 });  
-            }
+            }*/
           subscribe("fullAddress", async () => {
             const fullAddressInStore = get("fullAddress") || null;
              if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
@@ -461,15 +480,15 @@ function PublicMint(){
          e.preventDefault()
 
 
-         if (numberMinted>=maxPerAddressDuringMint) {
+         if (numberMinted>=publicSalePerMint) {
             showMessage({
                 type: "informtion",
-                title: "you minted max limit",
+                title: "you buy max limit",
             });
             return;
          }
             //计算mint总金额
-            const paymentETH =mintQuantity*publicPrice;
+            const paymentETH =publicSaleQuantity*publicPrice;
             //4.Mint
             const { signer, contract } = await connectWallet();
             const contractWithSigner = contract.connect(signer);
@@ -592,12 +611,14 @@ function CollectionList(){
                 if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
                     setFullAddress(fullAddressInStore);
                     const { contract } = await connectWallet();
-                }else{
+                }
+                
+                /*else{
                     showMessage({
                         type: "error",
                         title: "请链接钱包",
                     });  
-                }
+                }*/
               subscribe("fullAddress", async () => {
                 const fullAddressInStore = get("fullAddress") || null;
                  if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
