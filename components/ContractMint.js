@@ -99,14 +99,21 @@ function AllowListMint(){
     const maxPerAddressDuringMint = parseInt(await contract.maxPerAddressDuringMint());
     const allowListStatus=await contract.allowListStatus();
 
-    if (fullAddress) {
-    const allowListStock= parseInt(await contract.allowListStock(fullAddress));
-    setAllowListStock(allowListStock);
-    }
+
     setAllowListMintAmount(allowListMintAmount);
     setAllowListMintPrice(allowListMintPrice/10**18);
     setMaxPerAddressDuringMint(maxPerAddressDuringMint);
     setAllowListStatus(allowListStatus);
+
+     if (fullAddress) {
+    const  allowListAppeared=await contract.allowListAppeared(fullAddress)
+    if (allowListAppeared) {
+        const allowListStock= parseInt(await contract.allowListStock(fullAddress));
+        setAllowListStock(allowListStock);
+     }else{
+        setAllowListStock(maxPerAddressDuringMint);
+     }
+    }
    }
 
     
@@ -187,24 +194,20 @@ function AllowListMint(){
     }
 
 
-  //提交handleReserveMint
+  //提交handleAllowlistMint
   const handleAllowlistMint= async (e) => {
       try {
          e.preventDefault()
-
-
-         if (allowListStock>=maxPerAddressDuringMint) {
+         if ((maxPerAddressDuringMint- allowListStock)>=maxPerAddressDuringMint) {
             showMessage({
                 type: "informtion",
                 title: "you minted max limit",
             });
             return;
          }
-
         //读取白名数据
         const res = await fetch(ALLOWLIST_HTTPS);
         const allowlistArray = await res.json();
-
         if (allowlistArray.length>0) {
             //1.叶子节点数据制作
             let  leafNodes =[];
@@ -311,7 +314,7 @@ function AllowListMint(){
     </div>
 
     <div className="mt-4 ml-4 mr-4" style={{"color":"#000","fontSize":"0.75rem"}}>
-             You minted {allowListStock}
+             You minted {maxPerAddressDuringMint-allowListStock}
      </div>
     <div className="mt-4 flex justify-center" onClick={handleAllowlistMint}>
         <div className="inline-flex rounded-md shadow">
@@ -330,19 +333,20 @@ function AllowListMint(){
 
 
 function PublicMint(){
+
     const [fullAddress,setFullAddress]=useState(null);
     const [amountForPublicSale,setAmountForPublicSale]= useState(null);
     const [publicPrice,setPublicPrice]= useState(null);
     const [publicSalePerMint,setPublicSalePerMint]= useState(null);
     const [publicSaleStatus,setPublicSaleStatus]= useState(null);
     const [publicSaleQuantity,setPublicSaleQuantity]= useState(1);
+    const [allowListStock,setAllowListStock]=useState(0);
+    const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
+    
 
     //mint总数
     const [numberMinted,setNumberMinted]=useState(0);
-    //白名单数
-    const [allowListStock,setAllowListStock]=useState(0);
- 
- 
+
  　//读取合约数据
     async function getContractData(fullAddress) {
 
@@ -351,18 +355,26 @@ function PublicMint(){
     const publicPrice = parseInt(await contract.publicPrice());
     const publicSalePerMint = parseInt(await contract.publicSalePerMint());
     const publicSaleStatus=await contract.publicSaleStatus();
+    const maxPerAddressDuringMint = parseInt(await contract.maxPerAddressDuringMint());
 
-    if (fullAddress) {
-    const numberMinted= parseInt(await contract.numberMinted(fullAddress));
-    const allowListStock= parseInt(await contract.allowListStock(fullAddress));
-
-    setAllowListStock(allowListStock);
-    setNumberMinted(numberMinted);
-    }
     setAmountForPublicSale(amountForPublicSale);
     setPublicPrice(publicPrice/10**18);
     setPublicSalePerMint(publicSalePerMint);
     setPublicSaleStatus(publicSaleStatus);
+    setMaxPerAddressDuringMint(maxPerAddressDuringMint);
+
+
+    if (fullAddress) {
+     const numberMinted= parseInt(await contract.numberMinted(fullAddress));
+     setNumberMinted(numberMinted);
+    const  allowListAppeared=await contract.allowListAppeared(fullAddress)
+    if (allowListAppeared) {
+        const allowListStock= parseInt(await contract.allowListStock(fullAddress));
+        setAllowListStock(allowListStock);
+     }else{
+        setAllowListStock(maxPerAddressDuringMint);
+     }
+    }
    }
 
     
@@ -443,8 +455,8 @@ function PublicMint(){
     }
 
 
-  //提交handleReserveMint
-  const handleAllowlistMint= async (e) => {
+  //handlePublicSale
+  const handlePublicSale= async (e) => {
       try {
          e.preventDefault()
 
@@ -456,18 +468,12 @@ function PublicMint(){
             });
             return;
          }
-
-         
-        
             //计算mint总金额
             const paymentETH =mintQuantity*publicPrice;
-
             //4.Mint
             const { signer, contract } = await connectWallet();
             const contractWithSigner = contract.connect(signer);
             const value = ethers.utils.parseEther(paymentETH.toString());
-
-
             const tx = await contractWithSigner.allowListMint(mintQuantity,proof,{value,});
             const response = await tx.wait();
             showMessage({
@@ -475,10 +481,6 @@ function PublicMint(){
                 title: "your wallet address not in allowlist",
             });
             return;
-           
-           
-         
-          
       } catch (err) {
         showMessage({
           type: "error",
@@ -532,9 +534,9 @@ function PublicMint(){
     </div>
 
     <div className="mt-4 ml-4 mr-4" style={{"color":"#000","fontSize":"0.75rem"}}>
-             You Buy {numberMinted-allowListStock}
+             You Buy {numberMinted>0 ? (numberMinted- maxPerAddressDuringMint- allowListStock):"0"}
      </div>
-    <div className="mt-4 flex justify-center" onClick={handleAllowlistMint}>
+    <div className="mt-4 flex justify-center" onClick={handlePublicSale}>
         <div className="inline-flex rounded-md shadow">
             <a className="inline-flex items-center justify-center px-6 py-2 border 
             border-transparent text-base rounded-md text-white bg-indigo-600 hover:bg-indigo-700"

@@ -138,7 +138,6 @@ function Admin(){
   const [baseURI,setBaseURI]= useState("");
   const [quantity,setQuantity]= useState("");
   const [reserveAddress,setReserveAddress]= useState("");
-  const [allowListFileHttpURL,setAllowListFileHttpURL]= useState("https://gateway.pinata.cloud/ipfs/QmVjVCNcWdzDchX4CdQWnXWkS4QavNRwZCViagYkzaN3vg");
   
   
  
@@ -261,22 +260,22 @@ function Admin(){
 
  //读取白名单
  const handleReadAllowList= async (e) => {
-      try {
-         e.preventDefault()
-          
+      // try {
+         e.preventDefault();
           //获取元数据
-          const res = await fetch(allowListFileHttpURL);
-          const allowlistArray = await res.json();
-
+          const res = await fetch(ALLOWLIST_HTTPS);
+          const allowlistArray =await res.json();
+          showMessage({
+            type: "success",
+            title: allowlistArray.toString(),
+          });
           if (allowlistArray.length>0) {
-
             //1.叶子节点数据制作
             let  leafNodes =[];
               for(let address in allowlistArray ){
                 let leafNode = keccak256(allowlistArray[address]);
                 leafNodes.push(leafNode)
-              }
-
+             }
             //2.生成树根,需要设置合约的MerkleRoot
             let tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
             let merkleRoot=tree.getHexRoot();
@@ -297,14 +296,16 @@ function Admin(){
             //4.前
           }
            
-      } catch (err) {
-        showMessage({
-          type: "error",
-          title: "error informtion",
-          body: err.message,
-        });
-      } 
-  }
+      // } catch (err) {
+      //   showMessage({
+      //     type: "error",
+      //     title: "error informtion",
+      //     body: err.message,
+      //   });
+      // } 
+
+      return;
+}
 
 return (
 <>
@@ -457,8 +458,7 @@ return (
           <div className="ant-col ant-form-item-control">
             <div className="ant-form-item-control-input">
               <div className="ant-form-item-control-input-content">
-                <input placeholder="ipfs or other" name="baseURI" className="ant-input" type="text" 
-                value={ALLOWLIST_HTTPS} onChange={(e) => setAllowListFileHttpURL(e.target.value)} />
+                {ALLOWLIST_HTTPS}
               </div>
             </div>
           </div>
