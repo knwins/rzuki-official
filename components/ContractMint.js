@@ -271,8 +271,8 @@ function AllowListMintFun(){
             const tx = await contractWithSigner.allowListMint(mintQuantity,proof,{value,});
             const response = await tx.wait();
             showMessage({
-                type: "informtion",
-                title: "your wallet address not in allowlist",
+                type: "success",
+                title: "allow list mint success",
             });
             return;
            
@@ -301,7 +301,7 @@ function AllowListMintFun(){
         <span className="block">Allow List Mint</span>
     </h2>
     <p className="mt-4 text-lg leading-6 text-indigo-200" style={{"color":"#000"}} >
-        <span className="px-4">Collection Size:{COLLECTION_SIZE}</span> <span className="px-4">Allowlist Price:{allowListMintPrice}ETH</span>
+        <span className="px-4">Allowlist Price:{allowListMintPrice}ETH</span>
     </p>
 
     <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1rem"}}>
@@ -538,8 +538,8 @@ function PublicSaleFun(){
             const tx = await contractWithSigner.publicSaleMint(publicSaleQuantity,{value,});
             const response = await tx.wait();
             showMessage({
-                type: "informtion",
-                title: "your wallet address not in allowlist",
+                type: "success",
+                title: "public sale buy success",
             });
             return;
       } catch (err) {
@@ -559,7 +559,7 @@ function PublicSaleFun(){
         <span className="block">Public Sale</span>
     </h2>
     <p className="mt-4 text-lg leading-6 text-indigo-200" style={{"color":"#000"}} >
-        <span className="px-4">Collection Size:{COLLECTION_SIZE}</span> <span className="px-4">Public Sale Price:{publicPrice}ETH</span>
+        <span className="px-4">Public Sale Price:{publicPrice}ETH</span>
     </p>
 
     <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1rem"}}>
