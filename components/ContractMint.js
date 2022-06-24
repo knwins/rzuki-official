@@ -535,7 +535,7 @@ function PublicSaleFun(){
             const { signer, contract } = await connectWallet();
             const contractWithSigner = contract.connect(signer);
             const value = ethers.utils.parseEther(paymentETH.toString());
-            const tx = await contractWithSigner.allowListMint(publicSaleQuantity,{value,});
+            const tx = await contractWithSigner.publicSaleMint(publicSaleQuantity,{value,});
             const response = await tx.wait();
             showMessage({
                 type: "informtion",
