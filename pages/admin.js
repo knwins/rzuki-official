@@ -1,16 +1,15 @@
-
 import Head from "next/head";
-import Index from "../components/Index";
+import Admin from "../components/Admin";
 
 export default function Home() {
   return (
     <div>
       <Head>
-        <title>Mint实例</title>
+        <title>合约管理</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta name="description" content="Mint实例" />
+        <meta name="description" content="合约管理" />
       </Head>
-      <Index />
+      <Admin />
     </div>
   );
 }

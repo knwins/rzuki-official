@@ -1,15 +1,16 @@
 import Image from 'next/image';
 
-export default function(){
+function Logo(){
 return (<>
       <Image
         src="/logo.svg"
-        alt="Uzuki"
-        width={244}
-        height={48}
+        alt="RZuki"
+        width={183}
+        height={36}
         className="logo"
       />
   </>)
 };
+export default Logo;
 
  

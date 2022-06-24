@@ -1,7 +1,0 @@
-.collectList{margin-top: 10px; padding: 20px 0; width: 100%; overflow: hidden;}
-.collectList ul{margin: 0; padding: 0;}
-.collectList li{width: 23%; float: left;position: relative;list-style-type: none; margin: 20px 1%;}
-.collectList li img{width: 100%; vertical-align: middle;}
-.collectList li .text{position: absolute;/**/ left: 10px; top: 10px; color: rgb(0, 0, 0); font-size: 1rem;}
-
-.logo{--tw-bg-opacity: 1;background-color: rgba(192,53,64,var(--tw-bg-opacity)); padding:0.5rem !important; border-radius: 5px;}
