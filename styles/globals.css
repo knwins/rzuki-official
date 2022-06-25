@@ -33,4 +33,5 @@ a {
 .contract-image img{ text-align: center;}
 .navigation-logo{ margin: 1rem 0; }
 .navigation-menu{ margin: 0.75rem 0; }
+.main{ padding-top: 8rem!important; }
 }
