@@ -7,7 +7,7 @@ export default function Home() {
         <title>Rzuki NFT</title>
         <link rel="icon" href="/favicon.ico" />
         <meta name="description" content="Rzuki is a brand" />
-        <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+        <meta httpEquiv="Access-Control-Allow-Origin" content="*" />
       </Head>
       <Index />
     </div>
