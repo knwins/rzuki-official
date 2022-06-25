@@ -22,3 +22,15 @@ a {
 .collectList li .text{position: absolute;/**/ left: 10px; top: 10px; color:white; font-size: 0.75rem;}
 .logo{padding:0.2rem !important;}
 .logo-txt{color:#000000}
+.contract-bg{background:url(/girl_bg.png) no-repeat right bottom;backgroundPosition:100%;grid-auto-rows:auto;}
+.contract-info{ width: 100%; padding-right: 40%; }
+.contract-image{ display:none; }
+
+@media(max-width:750px){
+.contract-info{width: 100%; padding-right: 0;}
+.contract-bg{ background:none; }
+.contract-image{display:block;}
+.contract-image img{ text-align: center;}
+.navigation-logo{ margin: 1rem 0; }
+.navigation-menu{ margin: 0.75rem 0; }
+}
