@@ -33,9 +33,7 @@ function ContractShow(){
 
     return (
     <>
-     <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8"
-
-style={{"background":"url(/girl_bg.png) no-repeat right bottom","backgroundPosition":"100%","gridAutoRows":"auto"}}
+     <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8 contract-bg"
 >
      <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
       <span className="block" style={{"color":"#000000","fontSize":"40px",
@@ -43,7 +41,7 @@ style={{"background":"url(/girl_bg.png) no-repeat right bottom","backgroundPosit
        RZuKi NFT</span>
     </h2>
 
-    <div style={{"width":"100%","paddingRight":"40%"}} className="mx-auto text-left">
+    <div className="mx-auto text-left contract-info">
           <p className="mt-4 text-lg leading-6 text-indigo-200" 
           style={{"color":"#000000","fontSize":"1erm",
           "lineHeight":"1.5rem",}}>
@@ -71,6 +69,10 @@ style={{"background":"url(/girl_bg.png) no-repeat right bottom","backgroundPosit
         "lineHeight":"1.7rem",}}>
         The Garden is a corner of the internet where art, community, and culture fuse to create magic. The lines between the physical and digital worlds are blurring and the rules are being rewritten.
         </p>
+      </div>
+
+      <div className="contract-image mx-auto">
+      <img src="/girl_bg.png" className="mx-auto" />
       </div>
       </div>
     </>
@@ -166,7 +168,7 @@ function AllowListMintFun(){
       } catch (err) {
         showMessage({
           type: "error",
-          title: "获取合约状态失败",
+          title: "contract connect error",
           body: err.message,
         });
       }
@@ -309,7 +311,7 @@ function AllowListMintFun(){
     </div>
 
     <div className="text-lg" style={{"color":"#000"}}>
-        <div className="flex items-center justify-center gap-x-2">
+        <div className="flex items-center justify-center gap-x-2 menu">
             <button type="button" onClick={handLeftClick} className="ant-btn ant-btn-default ant-btn-icon-only ant-btn-background-ghost"
             ant-click-animating-without-extra-node="false" style={{"width":"22px","height":"22px","background":"#b7323d"}}>
                 <span role="img" aria-label="minus" className="anticon anticon-minus" style={{"color":"#fff"}}>
@@ -368,9 +370,6 @@ function PublicSaleFun(){
     const [allowListStock,setAllowListStock]=useState(0);
     const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
     
-    //已买的数量
-    const [publicSaleBuyed,setPublicSaleBuyed]= useState(0);
-    //已minit数量
     const [allowListMinted,setAllowListMinted]= useState(0);
     
 
@@ -380,7 +379,7 @@ function PublicSaleFun(){
  　//读取合约数据
     async function getContractData(fullAddress) {
 
-        try{
+   try{
 
     const { contract } = await connectWallet();
     const amountForPublicSale = parseInt(await contract.amountForPublicSale());
@@ -388,12 +387,14 @@ function PublicSaleFun(){
     const publicSalePerMint = parseInt(await contract.publicSalePerMint());
     const publicSaleStatus=await contract.publicSaleStatus();
     const maxPerAddressDuringMint=await contract.maxPerAddressDuringMint();
+    const numberMinted=await contract.numberMinted(fullAddress);
 
     setAmountForPublicSale(amountForPublicSale);
     setPublicPrice(publicPrice/10**18);
     setPublicSalePerMint(publicSalePerMint);
     setPublicSaleStatus(publicSaleStatus);
     setMaxPerAddressDuringMint(maxPerAddressDuringMint);
+    setNumberMinted(numberMinted);
     
     if (fullAddress) {
     const numberMinted= parseInt(await contract.numberMinted(fullAddress));
@@ -407,13 +408,6 @@ function PublicSaleFun(){
      }else{
         setAllowListStock(maxPerAddressDuringMint);
         setAllowListMinted(0);
-     }
-     //处理公售
-     
-     if(numberMinted>0){
-       setPublicSaleBuyed(numberMinted-allowListMinted);
-     }else{
-      setPublicSaleBuyed(0);
      }
         
     }
@@ -466,7 +460,7 @@ function PublicSaleFun(){
       } catch (err) {
         showMessage({
           type: "error",
-          title: "获取合约状态失败",
+          title: "contract connect error",
           body: err.message,
         });
       }
@@ -484,7 +478,8 @@ function PublicSaleFun(){
       } catch (err) {
         showMessage({
           type: "error",
-          title: "error informtion"
+          title: "error informtion",
+          body:err.message,
         });
       } 
     }
@@ -501,7 +496,8 @@ function PublicSaleFun(){
       } catch (err) {
         showMessage({
           type: "error",
-          title: "error informtion"
+          title: "error informtion",
+          body:err.message,
         });
       } 
     }
@@ -512,8 +508,6 @@ function PublicSaleFun(){
       try {
          e.preventDefault()
 
-
-
       if (!publicSaleStatus) {
             showMessage({
                 type: "informtion",
@@ -522,7 +516,7 @@ function PublicSaleFun(){
             return;
          }
 
-         if (publicSaleBuyed>=publicSalePerMint) {
+         if ((numberMinted-allowListMinted)>=publicSalePerMint) {
             showMessage({
                 type: "informtion",
                 title: "you buy max limit",
@@ -596,7 +590,7 @@ function PublicSaleFun(){
     </div>
 
     <div className="mt-4 ml-4 mr-4" style={{"color":"#000","fontSize":"0.75rem"}}>
-             You Buy {publicSaleBuyed}
+             You Buy { numberMinted>0?(numberMinted- allowListMinted):"0" }
      </div>
     <div className="mt-4 flex justify-center" onClick={handlePublicSale}>
         <div className="inline-flex rounded-md shadow">
@@ -694,7 +688,7 @@ function CollectionList(){
           } catch (err) {
             showMessage({
               type: "error",
-              title: "获取合约状态失败",
+              title: "contract connect error",
               body: err.message,
             });
           }
