@@ -37,28 +37,28 @@ function ContractShow(){
         <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8 contract-bg"
         >
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-        <span className="block" style={{"color":"#000000","fontSize":"40px",
+        <span className="block" style={{"fontFamily":"MarkerFelt","color":"#000000","fontSize":"40px",
         "lineHeight":"40px",}}>
         RZuKi NFT</span>
         </h2>
 
         <div className="mx-auto text-left contract-info">
         <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"color":"#000000","fontSize":"1erm",
-        "lineHeight":"1.5rem",}}>
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
+        "lineHeight":"1.5rem","fontWeight":"300"}}>
         Rzuki is a brand.</p>
 
         <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"color":"#000000","fontSize":"1erm",
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
         "lineHeight":"1.5rem",}}>
         A new kind of brand that we build together.</p>
 
         <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"color":"#000000","fontSize":"1erm",
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
         "lineHeight":"1.5rem",}}>A brand for the metaverse. By the community.</p>
 
         <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"color":"#000000","fontSize":"1erm",
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
         "lineHeight":"1.7rem",}}>
         A collection of 1,888 avatars that give you membership access to The Garden. 
         It starts with exclusive streetwear collabs, NFT drops, live events, and much more that will be revealed over time. 
@@ -66,7 +66,7 @@ function ContractShow(){
         </p>
         
         <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"color":"#000000","fontSize":"1erm",
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
         "lineHeight":"1.7rem",}}>
         The Garden is a corner of the internet where art, community, and culture fuse to create magic. The lines between the physical and digital worlds are blurring and the rules are being rewritten.
         </p>
