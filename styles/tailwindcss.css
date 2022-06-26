@@ -5735,8 +5735,10 @@ input[type=date],input[type=datetime-local],input[type=month],input[type=time]{-
 ::-webkit-scrollbar{width:.5rem}
 ::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}
 ::-webkit-scrollbar-thumb{border-radius:10px;background-color:rgba(0,0,0,.15)}
-@font-face{font-family:Inter val;src:url(/fonts/Inter-VariableFont_slnt,wght.ttf)}
-@font-face{font-family:Inter val;src:url(/fonts/Inter-Bold.ttf);font-weight:700}
-body{font-size:1rem;line-height:1.5rem;color:rgb(17 24 39/var(--tw-text-opacity));font-family:Inter val,ui-sans-serif,system-ui,-apple-system,"system-ui",Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji}
+  @font-face{font-family:MarkerFelt;src:url(/fonts/MarkerFelt.otf)}
+@font-face{font-family:Noteworthy-Light;src:url(/fonts/Noteworthy-Light.ttf)}
+
+body{font-size:1rem;line-height:1.5rem;color:rgb(17 24 39/var(--tw-text-opacity));
+	font-family:ui-sans-serif,system-ui,-apple-system,"system-ui",Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji}
 a,body{--tw-text-opacity:1}
 a{color:rgb(79 70 229/var(--tw-text-opacity))}
