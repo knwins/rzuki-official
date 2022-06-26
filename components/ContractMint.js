@@ -291,15 +291,15 @@ function ContractShow(){
 
 return (
 
-    <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+    <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8" style={{"fontFamily":"Noteworthy-Light",}}>
     <h2 className="text-3xl tracking-tight text-gray-900 sm:text-4xl">
     <span className="block">Allow List Mint</span>
     </h2>
-    <p className="mt-4 text-lg leading-6 text-indigo-200" style={{"color":"#000"}} >
-    <span className="px-4">Allowlist Price:{allowListMintPrice}ETH</span>
+    <p className="mt-4 text-lg leading-6 text-indigo-200">
+    <span className="px-4" style={{"color":"#000",}}>Allowlist Price:{allowListMintPrice}ETH</span>
     </p>
 
-    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000","fontSize":"1rem"}}>
+    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000",}}>
     {ALLOWLIST_AMOUNT-allowListMintAmount} / {ALLOWLIST_AMOUNT}
     </div>
 
@@ -535,7 +535,7 @@ function PublicSaleFun(){
 
     return (
 
-        <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8" style={{"fontFamily":"Noteworthy-Light",}}>
         <h2 className="text-3xl tracking-tight text-gray-900 sm:text-4xl">
         <span className="block">Public Sale</span>
         </h2>
@@ -684,7 +684,7 @@ function PublicSaleFun(){
 
       return(
         <>
-        <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8" style={{"fontFamily":"Noteworthy-Light",}}>
         <div className="collectList">
         <div style={{
             alignItems: "center",
