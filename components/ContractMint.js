@@ -90,12 +90,9 @@ function ContractShow(){
         </p>
 
         <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
-        "lineHeight":"1.5rem",}}>
-        Twitter follow more than 500 start Free MINT.
-
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1.2erm",
+        "lineHeight":"1.7rem",}}>Twitter follow more than 500 start Free MINT.
         </p>
-
         </div>
 
         <div className="contract-image mx-auto">
