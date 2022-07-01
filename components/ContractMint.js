@@ -975,6 +975,7 @@ function FreeMintFun(){
       return (
       <>
       　<ContractShow />
+        <FreeMintFun />
       </>
       );
   }
