@@ -78,10 +78,17 @@ function ContractShow(){
         "lineHeight":"1.5rem",}}>
          Collection Size:1888
         </p>
+
+<p className="mt-4 text-lg leading-6 text-indigo-200" 
+        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
+        "lineHeight":"1.5rem",}}>
+        Airdrop Size:30
+        </p>
+
          <p className="mt-4 text-lg leading-6 text-indigo-200" 
         style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
         "lineHeight":"1.5rem",}}>
-         Free Mint Size:888 
+         Free Mint Size:858 
         </p>
          <p className="mt-4 text-lg leading-6 text-indigo-200" 
         style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
@@ -753,7 +760,7 @@ function FreeMintFun(){
             return;
             }
 
-            if (freeQuantity>=freeStock) {
+            if (freeQuantity>freeStock) {
                 showMessage({
                     type: "informtion",
                     title: "you minted max limit",
@@ -968,8 +975,6 @@ function FreeMintFun(){
       return (
       <>
       　<ContractShow />
-      <FreeMintFun />
-      <CollectionList />
       </>
       );
   }
