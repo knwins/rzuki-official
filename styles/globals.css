@@ -20,7 +20,7 @@ a {
 .collectList li{width: 23%; float: left;position: relative;list-style-type: none; margin: 20px 1%;}
 .collectList li img{width: 100%; vertical-align: middle;}
 .collectList li .text{position: absolute;/**/ left: 10px; top: 10px; color:white; font-size: 0.75rem;}
-.logo{padding:0.2rem !important;}
+.logo{padding:0.5rem !important;}
 .logo-txt{color:#000000}
 .contract-bg{background:url(/girl_bg.png) no-repeat right bottom;backgroundPosition:100%;grid-auto-rows:auto;}
 .contract-info{ width: 100%; padding-right: 40%; }
