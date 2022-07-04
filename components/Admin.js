@@ -242,22 +242,22 @@ function Admin(){
       } 
   }
 
-  //提交handleReserveMint
-  const handleReserveMint= async (e) => {
+  //提交handleAirdrop
+  const handleAirdrop= async (e) => {
       try {
          e.preventDefault()
           const { signer, contract } = await connectWallet();
           const contractWithSigner = contract.connect(signer);
-          const tx = await contractWithSigner.reserveMint(quantity,reserveAddress);
+          const tx = await contractWithSigner.airdrop(quantity,reserveAddress);
           const response = await tx.wait();
           showMessage({
             type: "success",
-            title: "Mint success",
+            title: "Airdrop success",
            });
       } catch (err) {
         showMessage({
           type: "error",
-          title: "Mint Fail",
+          title: "Airdrop Fail",
           body: err.message,
         });
       } 
@@ -300,7 +300,7 @@ return (
       </div>
     </div>
     <div className="text-2xl mt-4 mb-4">合约管理</div>
-    <div className="my-4">合约地址为：<a href={"https://rinkeby.etherscan.io/address/"+CONTRACT_ADDRESS} 
+    <div className="my-4">合约地址为：<a href={"https://etherscan.io/address/"+CONTRACT_ADDRESS} 
     target="_blank" rel="noreferrer">{CONTRACT_ADDRESS}</a> </div>
     <div className="text-xl mb-8 mt-4">通用</div>
 
