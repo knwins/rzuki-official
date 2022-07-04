@@ -371,7 +371,7 @@ return (
       <button type="button" className="ant-btn ant-btn-default 
       text-base px-4 py-2 inline-flex items-center border border-gray-300 shadow-sm font-medium rounded-md text-gray-700 bg-white 
       hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 undefined"
-      onClick={handleReserveMint}
+      onClick={handleAirdrop}
       ><span>reserve mint</span></button>
     </div>
 
