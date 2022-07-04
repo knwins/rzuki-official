@@ -570,7 +570,7 @@ function FreeMintFun(){
         <div className="inline-flex rounded-md shadow">
         <a className="inline-flex items-center justify-center px-6 py-2 border 
         border-transparent text-base rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-        style={{ "background":"#b7323d","color":"#fff"}}> {freeMintStatus ? "Free Mint" :"Wait Free mint"}</a>
+        style={{ "background":"#b7323d","color":"#fff"}}> {freeMintStatus ? "Free Mint" :"Coming soon"}</a>
         </div>
         </div>
         </div>
