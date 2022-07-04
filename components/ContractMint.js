@@ -15,8 +15,6 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
 const OPENSEA_HTTPS = process.env.NEXT_PUBLIC_OPENSEA_HTTPS
 const COLLECTION_SIZE = process.env.NEXT_PUBLIC_COLLECTION_SIZE;
 const PUBLICSALE_AMOUNT = process.env.NEXT_PUBLIC_PUBLICSALE_AMOUNT;
-const ALLOWLIST_HTTPS = process.env.NEXT_PUBLIC_ALLOWLIST_HTTPS;
-const ALLOWLIST_AMOUNT= process.env.NEXT_PUBLIC_ALLOWLIST_AMOUNT;
 const FREE_AMOUNT= process.env.NEXT_PUBLIC_FREE_AMOUNT;
 
 
@@ -79,10 +77,11 @@ function ContractShow(){
          Collection Size:1888
         </p>
 
+         
 <p className="mt-4 text-lg leading-6 text-indigo-200" 
         style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1erm",
         "lineHeight":"1.5rem",}}>
-        Airdrop Size:30
+         Airdrop Mint Size:30 
         </p>
 
          <p className="mt-4 text-lg leading-6 text-indigo-200" 
@@ -95,11 +94,6 @@ function ContractShow(){
         "lineHeight":"1.5rem",}}>
         Public Sale Size:1000 ; Price:0.0069 ETH
         </p>
-
-        <p className="mt-4 text-lg leading-6 text-indigo-200" 
-        style={{"fontFamily":"Noteworthy-Light","color":"#000000","fontSize":"1.2erm",
-        "lineHeight":"1.7rem",}}>Twitter follow more than 500 start Free MINT.
-        </p>
         </div>
 
         <div className="contract-image mx-auto">
@@ -110,273 +104,6 @@ function ContractShow(){
         );
         
     }
-
-
-
-    function AllowListMintFun(){
-
-        const [fullAddress,setFullAddress]=useState(null);
-        const [allowListMintAmount,setAllowListMintAmount]= useState(0);
-        const [allowListMintPrice,setAllowListMintPrice]= useState(null);
-        const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
-        const [allowListStatus,setAllowListStatus]= useState(null);
-        const [mintQuantity,setMintQuantity]= useState(1);
-        const [allowListStock,setAllowListStock]=useState(0);
-
-        
-        　//读取合约数据
-        async function getContractData(fullAddress) {
-            try {
-                const { contract } = await connectWallet();
-                const allowListMintAmount = parseInt(await contract.allowListMintAmount());
-                const allowListMintPrice = parseInt(await contract.allowListMintPrice());
-                const maxPerAddressDuringMint = parseInt(await contract.maxPerAddressDuringMint());
-                const allowListStatus=await contract.allowListStatus();
-
-                setAllowListMintAmount(allowListMintAmount);
-                setAllowListMintPrice(allowListMintPrice/10**18);
-                setMaxPerAddressDuringMint(maxPerAddressDuringMint);
-                setAllowListStatus(allowListStatus);
-                setMintQuantity(1);
-
-                if (fullAddress) {
-                    const  allowListAppeared=await contract.allowListAppeared(fullAddress)
-                    if (allowListAppeared) {
-                        const allowListStock= parseInt(await contract.allowListStock(fullAddress));
-                        setAllowListStock(allowListStock);
-                    }else{
-                        setAllowListStock(maxPerAddressDuringMint);
-                    }
-                }
-
-            } catch (err) {
-                if (!connectStatusTip) {
-                    showMessage({
-                        type: "error",
-                        title: "Contract Network Connect Failed",
-                        body: err.message,
-                    });
-                    connectStatusTip=true;
-                }
-            }
-        }
-
-        
-     //读取地址判断
-     useEffect(() => {
-        (async () => {
-            const fullAddressInStore = get("fullAddress") || null;
-            
-            if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
-                setFullAddress(fullAddressInStore);
-                const { contract } = await connectWallet();
-            }
-            subscribe("fullAddress", async () => {
-                const fullAddressInStore = get("fullAddress") || null;
-                if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
-                   setFullAddress(fullAddressInStore);
-                   const { contract } = await connectWallet();
-                   getContractData(fullAddressInStore);
-               }
-           });
-        })();
-    }, []);
-
-     
-     useEffect(() => {
-      try {
-        const fullAddressInStore = get("fullAddress") || null;
-        if (fullAddressInStore && fullAddressInStore!="" && fullAddressInStore!=null) {
-          setFullAddress(fullAddressInStore);
-          getContractData(fullAddressInStore);
-      }
-  } catch (err) {
-    if (!connectStatusTip) {
-        showMessage({
-            type: "error",
-            title: "Contract Network Connect Failed",
-            body: err.message,
-        });
-        connectStatusTip=true;
-    }
-}
-}, []);
-
-
-    //点击handLeftClick
-    const handLeftClick= async (e) => {
-      try {
-          e.preventDefault();
-          if (mintQuantity>1 && mintQuantity<=maxPerAddressDuringMint) {
-            setMintQuantity(mintQuantity-1);
-        }
-        
-    } catch (err) {
-        showMessage({
-          type: "error",
-          title: "error informtion",
-          body:err.message,
-      });
-    } 
-}
-
-    //点击handRightClick
-    const handRightClick= async (e) => {
-      try {
-          e.preventDefault();
-
-          if (mintQuantity>=1 && mintQuantity<maxPerAddressDuringMint) {
-           setMintQuantity(mintQuantity+1);
-       }
-       
-   } catch (err) {
-    showMessage({
-      type: "error",
-      title: "error informtion",
-      body:err.message
-  });
-} 
-}
-
-
-  //提交handleAllowlistMint
-  const handleAllowlistMint= async (e) => {
-      try {
-       e.preventDefault()
-       if (!allowListStatus) {
-        showMessage({
-            type: "informtion",
-            title: "wait allow list mint",
-        });
-        return;
-    }
-
-    if ((maxPerAddressDuringMint- allowListStock)>=maxPerAddressDuringMint) {
-        showMessage({
-            type: "informtion",
-            title: "you minted max limit",
-        });
-        return;
-    }
-        //读取白名数据
-        const res = await fetch(ALLOWLIST_HTTPS);
-        const allowlistArray = await res.json();
-        if (allowlistArray.length>0) {
-            //1.叶子节点数据制作
-            let  leafNodes =[];
-            for(let address in allowlistArray ){
-                let leafNode = keccak256(allowlistArray[address]);
-                leafNodes.push(leafNode)
-            }
-
-            //2.生成树根,需要设置合约的MerkleRoot
-            let tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
-            
-            //3.生成叶子的proof(需要检验的地址),前端Mint是用到
-            let proof=tree.getHexProof(keccak256(fullAddress));
-            
-            if ( !proof || proof==null || proof=="") {
-                showMessage({
-                    type: "informtion",
-                    title: "your wallet address not in allowlist",
-                });
-                return;
-            }
-
-            //计算mint总金额
-            const paymentETH =mintQuantity*allowListMintPrice;
-
-            //4.Mint
-            const { signer, contract } = await connectWallet();
-            const contractWithSigner = contract.connect(signer);
-            const value = ethers.utils.parseEther(paymentETH+"");
-
-            // showMessage({
-            //     type: "informtion",
-            //     title: value+"|"+proof+"|"+mintQuantity,
-            // });
-            const tx = await contractWithSigner.allowListMint(mintQuantity,proof,{value,});
-            const response = await tx.wait();
-            showMessage({
-                type: "success",
-                title: "allow list mint success",
-            });
-            return;
-        }else{
-            showMessage({
-                type: "success",
-                title: "allow list address read failed",
-            });
-        }
-        
-    } catch (err) {
-        showMessage({
-          type: "error",
-          title: "error informtion",
-          body: err.message,
-      });
-    } 
-}
-
-
-return (
-
-    <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8" style={{"fontFamily":"Noteworthy-Light",}}>
-    <h2 className="text-3xl tracking-tight text-gray-900 sm:text-4xl">
-    <span className="block">Allow List Mint</span>
-    </h2>
-    <p className="mt-4 text-lg leading-6 text-indigo-200">
-    <span className="px-4" style={{"color":"#000",}}>Allowlist Price:{allowListMintPrice}ETH</span>
-    </p>
-
-    <div className="mt-4 mb-4 text-lg leading-6 text-indigo-200" style={{"color":"#000",}}>
-    {ALLOWLIST_AMOUNT-allowListMintAmount} / {ALLOWLIST_AMOUNT}
-    </div>
-
-    <div className="text-lg" style={{"color":"#000"}}>
-    <div className="flex items-center justify-center gap-x-2 menu">
-    <button type="button" onClick={handLeftClick} className="ant-btn ant-btn-default ant-btn-icon-only ant-btn-background-ghost"
-    ant-click-animating-without-extra-node="false" style={{"width":"22px","height":"22px","background":"#b7323d"}}>
-    <span role="img" aria-label="minus" className="anticon anticon-minus" style={{"color":"#fff"}}>
-    <svg viewBox="64 64 896 896" focusable="false" data-icon="minus" width="1em"
-    height="1em" fill="currentColor" aria-hidden="true">
-    <path d="M872 474H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h720c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z">
-    </path>
-    </svg>
-    </span>
-    </button>
-    <div className="ml-4 mr-4" style={{"color":"#000","fontSize":"1.5rem"}}>
-    <input type="text" style={{"width":"120px"}} value={mintQuantity} 
-    className="ant-input text-center" onChange={(e) => setMintQuantity(1)} />
-    </div>
-
-    <button type="button" onClick={handRightClick} className="ant-btn ant-btn-default ant-btn-icon-only ant-btn-background-ghost"
-    ant-click-animating-without-extra-node="false" style={{"width":"22px","height":"22px","background":"#b7323d"}}>
-    <span role="img" aria-label="plus"  className="anticon anticon-plus">
-    <svg viewBox="64 64 896 896" focusable="false" data-icon="plus" width="1em"
-    height="1em" fill="currentColor" aria-hidden="true" style={{"color":"#fff"}}>
-    <path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z"></path>
-    <path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z"></path>
-    </svg>
-    </span>
-    </button>
-    </div>
-    </div>
-
-    <div className="mt-4 ml-4 mr-4" style={{"color":"#000","fontSize":"0.75rem"}}>
-    You minted {maxPerAddressDuringMint-allowListStock}
-    </div>
-    <div className="mt-4 flex justify-center" onClick={handleAllowlistMint}>
-    <div className="inline-flex rounded-md shadow">
-    <a className="inline-flex items-center justify-center px-6 py-2 border 
-    border-transparent text-base rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-    style={{ "background":"#b7323d","color":"#fff"}}> {allowListStatus ? "Allowlist Mint" :"Wait Mint"}</a>
-    </div>
-    </div>
-    </div>
-    );
-}
-
 
 
 
@@ -760,7 +487,7 @@ function FreeMintFun(){
             return;
             }
 
-            if (freeQuantity>freeStock) {
+            if (freeQuantity>=freeStock) {
                 showMessage({
                     type: "informtion",
                     title: "you minted max limit",
@@ -975,7 +702,8 @@ function FreeMintFun(){
       return (
       <>
       　<ContractShow />
-        <FreeMintFun />
+      <FreeMintFun />
+      <CollectionList />
       </>
       );
   }
