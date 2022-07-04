@@ -46,6 +46,9 @@ function Navigation(){
       </div>
       </a>
 
+
+      <OpenSeaHttps />
+
       
 
       <ConnectWallet />
