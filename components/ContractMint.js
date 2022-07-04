@@ -522,7 +522,7 @@ function FreeMintFun(){
 
         <div className="max-w-7xl mx-auto text-center py-12 px-4 sm:px-6 lg:py-16 lg:px-8" style={{"fontFamily":"Noteworthy-Light",}}>
         <h2 className="text-3xl tracking-tight text-gray-900 sm:text-4xl">
-        <span className="block">Free Mint</span>
+        <span className="block">Twitter follows more than 500 free mint</span>
         </h2>
 
 
