@@ -14,10 +14,7 @@ import ConnectWallet, { connectWallet } from "./ConnectWallet";
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 const COLLECTION_SIZE = process.env.NEXT_PUBLIC_COLLECTION_SIZE;
 const FREE_AMOUNT = process.env.NEXT_PUBLIC_FREE_AMOUNT;
-const ALLOWLIST_AMOUNT = process.env.NEXT_PUBLIC_ALLOWLIST_AMOUNT;
-const PUBLICSALE_AMOUNT = process.env.NEXT_PUBLIC_PUBLICSALE_AMOUNT;
-const ALLOWLIST_HTTPS = process.env.NEXT_PUBLIC_ALLOWLIST_HTTPS;
-
+const PUBLICSALE_AMOUNT=process.env.NEXT_PUBLIC_PUBLICSALE_AMOUNT;
 
 const ETHERSCAN_DOMAIN =
   process.env.NEXT_PUBLIC_CHAIN_ID === "1"
@@ -53,34 +50,7 @@ function WithdrawButton(props) {
   );
 }
 
-
-//白名单状态修改
-function AllowListStatusButton(props) {
-  return (
-    <button type="button" className="ant-btn ant-btn-default 
-      text-base px-4 py-2 inline-flex items-center border border-gray-300 shadow-sm font-medium rounded-md text-gray-700 bg-white 
-      hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 undefined"
-          onClick={async () => {
-          try {
-              const { signer, contract } = await connectWallet();
-              const contractWithSigner = contract.connect(signer);
-              const tx = await contractWithSigner.setAllowListStatus(props.status);
-              const response = await tx.wait();
-                showMessage({
-                  type: "success",
-                  title: "success",
-                });
-          } catch (err) {
-              showMessage({
-                type: "error",
-                title: "error informtion",
-                body: err.message,
-              });
-            }
-          }}
-      ><span>{props.buttonTxt}</span></button>
-  );
-}
+ 
 
 
 
@@ -152,16 +122,12 @@ function Admin(){
   const [name, setName] = useState(null);
   const [symbol, setSymbol] = useState(null);
 
-  const [allowListMintAmount,setAllowListMintAmount]= useState(null);
-  const [amountForPublicSale,setAmountForPublicSale]= useState(null);
+   const [amountForPublicSale,setAmountForPublicSale]= useState(null);
   const [totalSupply,setTotalSupply]= useState(null);
 
-  const [allowListMintPrice,setAllowListMintPrice]= useState(null);
-  const [maxPerAddressDuringMint,setMaxPerAddressDuringMint]= useState(null);
   const [publicPrice,setPublicPrice]= useState(null);
   const [publicSalePerMint,setPublicSalePerMint]= useState(null);
-  const [allowListStatus,setAllowListStatus]= useState(null);
-  const [publicSaleStatus,setPublicSaleStatus]= useState(null);
+   const [publicSaleStatus,setPublicSaleStatus]= useState(null);
 
   const [freeMintStatus,setFreeMintStatus]= useState(null);
   const [freeMintAmount,setFreeMintAmount]= useState(null);
@@ -180,16 +146,12 @@ function Admin(){
     const { contract } = await connectWallet();
     const name=await contract.name();
     const symbol=await contract.symbol();
-    const allowListMintAmount = parseInt(await contract.allowListMintAmount());
-    const amountForPublicSale = parseInt(await contract.amountForPublicSale());
+     const amountForPublicSale = parseInt(await contract.amountForPublicSale());
     const totalSupply = parseInt(await contract.totalSupply());
 
-    const allowListMintPrice = parseInt(await contract.allowListMintPrice());
-    const maxPerAddressDuringMint = parseInt(await contract.maxPerAddressDuringMint());
     const publicPrice = parseInt(await contract.publicPrice());
     const publicSalePerMint = parseInt(await contract.publicSalePerMint());
-    const allowListStatus=await contract.allowListStatus();
-    const publicSaleStatus=await contract.publicSaleStatus();
+     const publicSaleStatus=await contract.publicSaleStatus();
 
     const freeMintStatus = await contract.freeMintStatus();
     const freeMintAmount = parseInt(await contract.freeMintAmount());
@@ -197,16 +159,12 @@ function Admin(){
     
     setName(name);
     setSymbol(symbol);
-    setAllowListMintAmount(allowListMintAmount);
-    setAmountForPublicSale(amountForPublicSale);
+     setAmountForPublicSale(amountForPublicSale);
     setTotalSupply(totalSupply);
-    setAllowListMintPrice(allowListMintPrice/10**18);
-    setMaxPerAddressDuringMint(maxPerAddressDuringMint);
-
+ 
     setPublicPrice(publicPrice/10**18);
     setPublicSalePerMint(publicSalePerMint);
-    setAllowListStatus(allowListStatus);
-    setPublicSaleStatus(publicSaleStatus);
+     setPublicSaleStatus(publicSaleStatus);
 
     setFreeMintStatus(freeMintStatus);
     setFreeMintAmount(freeMintAmount);
@@ -305,55 +263,6 @@ function Admin(){
       } 
   }
 
- //读取白名单
- const handleReadAllowList= async (e) => {
-      // try {
-         e.preventDefault();
-          //获取元数据
-          const res = await fetch(ALLOWLIST_HTTPS);
-          const allowlistArray =await res.json();
-          showMessage({
-            type: "success",
-            title: allowlistArray.toString(),
-          });
-          if (allowlistArray.length>0) {
-            //1.叶子节点数据制作
-            let  leafNodes =[];
-              for(let address in allowlistArray ){
-                let leafNode = keccak256(allowlistArray[address]);
-                leafNodes.push(leafNode)
-             }
-            //2.生成树根,需要设置合约的MerkleRoot
-            let tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
-            let merkleRoot=tree.getHexRoot();
-
-            const { signer, contract } = await connectWallet();
-            const contractWithSigner = contract.connect(signer);
-            const tx = await contractWithSigner.setMerkleRoot(merkleRoot);
-            const response = await tx.wait();
-            showMessage({
-              type: "success",
-              title: "success",
-            });
-   
-            //3.生成叶子的proof(需要检验的地址),前端Mint是用到
-            //let proof=tree.getHexProof(keccak256(fullAddressInStore));
-
-
-            //4.前
-          }
-           
-      // } catch (err) {
-      //   showMessage({
-      //     type: "error",
-      //     title: "error informtion",
-      //     body: err.message,
-      //   });
-      // } 
-
-      return;
-}
-
 return (
 <>
 <Navigation />
@@ -375,22 +284,7 @@ return (
           </table>
         </div>
       </div>
-      <div className="ant-descriptions">
-        <div className="ant-descriptions-view">
-          <table>
-            <tbody>
-              <tr className="ant-descriptions-row">
-                <td className="ant-descriptions-item" ><div className="ant-descriptions-item-container"><span className="ant-descriptions-item-label">是否使用默克尔树存储白名单（推荐使用）</span><span className="ant-descriptions-item-content">yes</span></div></td>
-                <td className="ant-descriptions-item" ><div className="ant-descriptions-item-container"><span className="ant-descriptions-item-label">白名单发售价格</span><span className="ant-descriptions-item-content">{allowListMintPrice}</span></div></td>
-                <td className="ant-descriptions-item" ><div className="ant-descriptions-item-container"><span className="ant-descriptions-item-label">白名单发售数量</span><span className="ant-descriptions-item-content">{ALLOWLIST_AMOUNT}</span></div></td>
-              </tr>
-              <tr className="ant-descriptions-row">
-                <td className="ant-descriptions-item" colSpan="3"><div className="ant-descriptions-item-container"><span className="ant-descriptions-item-label">白名单用户铸造数目上限</span><span className="ant-descriptions-item-content">{maxPerAddressDuringMint}</span></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      
       <div className="ant-descriptions">
         <div className="ant-descriptions-view">
           <table>
@@ -439,7 +333,7 @@ return (
 
 
     <div className="flex items-center gap-x-2 mb-4 mt-4">
-      <div>保留Mint <small style={{ color:"red"}}>(团队数量不包含集合总数)</small></div>
+      <div>空投 <small style={{ color:"red"}}>(数量不包含集合总数)</small></div>
        
       <div className="ant-form ant-form-inline">
         <div className="ant-row ant-form-item" style={{rowGap:" 0px"}}>
@@ -499,49 +393,8 @@ return (
       <FreeMintStatusButton buttonTxt={freeMintStatus? "Free Mint Stop": "Free Mint Start"} status={freeMintStatus? 0: 1} />
     </div>
 
-
-
-    <div className="text-xl mb-4 mt-8">白名单管理</div>
-
-
-    <div className="flex items-center gap-x-2 mb-4">
-      <div>Mint状态：{allowListStatus?"Started":"Stoped"}</div>
-      <div>剩余数量：{allowListMintAmount}</div>
-    </div>
-
-
-     <div className="flex items-center gap-x-2 mb-4">
-      <div>白名单设置 <small style={{ color:"red"}}>(名单有修改要重新设置MerkleRoot)</small></div>
-      <div className="ant-form ant-form-inline">
-        <div className="ant-row ant-form-item" style={{rowGap:" 0px"}}>
-          <div className="ant-col ant-form-item-label">
-            <label htmlFor="name"></label>
-          </div>
-          <div className="ant-col ant-form-item-control">
-            <div className="ant-form-item-control-input">
-              <div className="ant-form-item-control-input-content">
-                {ALLOWLIST_HTTPS}
-              </div>
-            </div>
-          </div>
-        </div>
-      <button type="button" className="ant-btn ant-btn-default 
-      text-base px-4 py-2 inline-flex items-center border border-gray-300 shadow-sm font-medium rounded-md text-gray-700 bg-white 
-      hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 undefined"
-          onClick={handleReadAllowList}><span>读取白名单且设置MerkleRoot</span></button>
-     </div>
-     
-    </div>
-
-    <div className="flex items-center gap-x-2 mb-4">
-      <div>白名单文件格式：[&quot;0x1&quot;,&quot;0x2&quot;,...]
-      </div>
-    </div>
-
-    <div className="flex items-center gap-x-2 mb-4">
-      <div>开启/关闭Mint</div>
-      <AllowListStatusButton buttonTxt={allowListStatus? "AllowList Stop": "AllowList Start"} status={allowListStatus? 0: 1} />
-    </div>
+ 
+   
     <div className="text-xl mb-4 mt-8">公开售卖</div>
     <div className="flex items-center gap-x-2 mb-4">
       <div>Mint状态：{publicSaleStatus?"Started":"Stoped"}</div>
