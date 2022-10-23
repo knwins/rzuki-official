@@ -19,8 +19,8 @@ const FREE_AMOUNT= process.env.NEXT_PUBLIC_FREE_AMOUNT;
 
 
 const OPENSEA_HTTPS_TOKEN = process.env.NEXT_PUBLIC_CHAIN_ID === "1"
-? "https://opensea.io/assets/"+CONTRACT_ADDRESS+"/"
-: "https://testnets.opensea.io/assets/rinkeby/"+CONTRACT_ADDRESS+"/"
+? "https://x2y2.io/eth/"+CONTRACT_ADDRESS+"/"
+: "https://x2y2.io/eth/rinkeby/"+CONTRACT_ADDRESS+"/"
 
 const myLoader = ({src,width,quality}) => {
   return `${src}?w=${width}&q=${quality || 75}`
